@@ -1,1 +1,4 @@
 Django==1.8
+feedparser==5.2
+Pillow==2.8
+django-cors-headers==1.1

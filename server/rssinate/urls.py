@@ -15,7 +15,16 @@ Including another URLconf
 """
 from django.conf.urls import include, url
 from django.contrib import admin
+from rest_framework import routers
+
+from feeds.views import FeedViewSet
+
+
+REST_ROUTER = routers.DefaultRouter()
+REST_ROUTER.register(r'feeds', FeedViewSet)
 
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
+    url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
+    url(r'^', include(REST_ROUTER.urls)),
 ]
