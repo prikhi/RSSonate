@@ -5,12 +5,14 @@ export default Ember.Route.extend({
 
   actions: {
     addFeed: function() {
-      var feedUrl = this.get('controller.newFeedUrl');
-      var feed = this.store.createRecord('feed', {feedUrl: feedUrl});
-      feed.save().then(
-        () => { this.set('controller.newFeedUrl', ''); },
-        () => { feed.destroyRecord(); }
-      );
+      let feedUrl = this.get('controller.newFeedUrl');
+      let feed = this.store.createRecord('feed', {feedUrl: feedUrl});
+      feed.save().then(() => {
+        this.set('controller.newFeedUrl', '');
+      }).catch(reason => {
+        feed.deleteRecord();
+        this.set('controller.errors', reason.errors.feedUrl);
+      });
     }
   }
 });
