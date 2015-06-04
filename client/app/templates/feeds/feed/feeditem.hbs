@@ -1,0 +1,9 @@
+<h2>{{model.title}}</h2>
+
+{{#if previousItem}}{{link-to 'Previous' 'feeds.feed.feeditem' model.feed previousItem}}{{/if}}
+<a href='{{model.link}}' target='_blank'>View on Site</a>
+{{#if nextItem}}{{link-to 'Next' 'feeds.feed.feeditem' model.feed nextItem}}{{/if}}
+
+<div>{{{model.description}}}</div>
+
+{{outlet}}

@@ -17,11 +17,12 @@ from django.conf.urls import include, url
 from django.contrib import admin
 from rest_framework import routers
 
-from feeds.views import FeedViewSet
+from feeds.views import FeedViewSet, FeedItemViewSet
 
 
 REST_ROUTER = routers.DefaultRouter()
 REST_ROUTER.register(r'feeds', FeedViewSet)
+REST_ROUTER.register(r'feeditems', FeedItemViewSet)
 
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),

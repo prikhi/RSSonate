@@ -5,5 +5,6 @@ export default DS.Model.extend({
   title: DS.attr('string'),
   description: DS.attr('string'),
   channelLink: DS.attr('string'),
-  published: DS.attr('date')
+  published: DS.attr('date'),
+  items: DS.hasMany('feeditems', {async: true}),
 });

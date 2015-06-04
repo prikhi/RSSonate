@@ -80,7 +80,7 @@ WSGI_APPLICATION = 'rssinate.wsgi.application'
 # REST Settings
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': ('rest_framework.permissions.AllowAny',),
-    'PAGE_SIZE': 10,
+    'PAGE_SIZE': 25,
 }
 
 CORS_ORIGIN_ALLOW_ALL = DEBUG
