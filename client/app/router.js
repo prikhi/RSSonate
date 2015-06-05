@@ -6,13 +6,14 @@ var Router = Ember.Router.extend({
 });
 
 Router.map(function() {
-  this.route('feed', function() {});
   this.route('feeds', function() {
     this.route('feed', {
       path: ':feed_id',
     }, function() {
-      this.route('feeditem', {
-        path: ':feeditem_id',
+      this.route('feeditems', { path: 'items/' }, function() {
+        this.route('feeditem', {
+          path: ':feeditem_id',
+        });
       });
     });
   });

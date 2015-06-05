@@ -1,0 +1,93 @@
+@import 'bootstrap';
+@import 'theme';
+
+@standard-padding:              5px 7.5px;
+
+/* Bootstrap Variables */
+@grid-float-breakpoint:         @screen-xs-min;
+@grid-gutter-width:             10px;
+@nav-link-padding:              @standard-padding;
+@nav-pills-border-radius:       0;
+@navbar-height:                 40px;
+@panel-body-padding:            @standard-padding;
+@panel-heading-padding:         @standard-padding;
+@table-bg-active:               @component-active-bg;
+@table-condensed-cell-padding:  2px;
+
+/* Fix active table row text color */
+.table tbody tr a.active {
+  color: @component-active-color;
+}
+/* Fix color of striped active table row */
+table.table.table-striped tbody tr td.active {
+  border-top-color: @component-active-bg;
+}
+
+/* Reduce spacing from bottom of panels & nav */
+.panel, .navbar {
+  margin-bottom: @grid-gutter-width;
+}
+
+
+
+/* CSS */
+html, body,  {
+  height: 100%;
+}
+
+
+#feeds-panel > ul,  #items-panel > .panel-body {
+  height: 15em;
+  overflow-y: auto;
+}
+
+/** Set a default height for the content-panel.
+ * This will be overwritten to the remaining screen height if javascript
+ * enabled.
+ */
+#content-panel > .panel-body {
+  height: 100%;
+  min-height: 150px;
+  overflow-y: hidden;
+}
+
+/* Make the items panel take up the whole panel body */
+#items-panel .panel-body {
+  padding: 0 0;
+}
+/* Remove extra space at bottom of the table in the panel */
+#items-panel .table {
+  margin-bottom: 0;
+}
+
+/* Push the table text over a little */
+#items-panel td {
+  padding-left: 0.7em;
+}
+
+/* Center & Middle align the Items loading text */
+#items-panel .loading {
+  display: table;
+  width: 100%;
+  text-align: center;
+}
+#items-panel .loading > div {
+  margin: auto;
+  display: table-cell;
+  vertical-align: middle;
+}
+
+
+/* Spinning glyphicons */
+.glyphicons.spinning {
+  animation: spin 1s infinite linear;
+  -webkit-animation: spin2 1s infinite linear;
+}
+@keyframes spin {
+  from { transform: scale(1) rotate(0deg); }
+  to { transform: scale(1) rotate(360deg); }
+}
+@-webkit-keyframes spin2 {
+  from { -webkit-transform: rotate(0deg); }
+  to { -webkit-transform: rotate(360deg); }
+}

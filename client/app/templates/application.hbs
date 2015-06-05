@@ -1,10 +1,5 @@
-<h2 id="title">RSSinate</h2>
+{{partial 'navigation'}}
 
-<ul>
-  <li>{{link-to 'Feeds' 'feeds.index'}}</li>
-  <li>{{input name='feed-url' type='url' value=newFeedUrl enter='addFeed'}}</li>
-</ul>
-
-<p>{{errors}}</p>
-
-{{outlet}}
+<div class="container-fluid">
+  {{outlet}}
+</div>

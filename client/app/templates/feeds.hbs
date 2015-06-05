@@ -1,9 +1,16 @@
-<h1>Feeds</h1>
+<div class='row'>
+  <div class='col-sm-3'>
+    <div class='panel panel-primary' id='feeds-panel'>
+      <div class='panel-heading'>Feeds</div>
+      <ul class='nav nav-pills nav-stacked'>
+      {{#each model as |feed|}}
+        {{#link-to 'feeds.feed.feeditems' feed tagName='li' class='presentation'}}
+          {{link-to feed.title 'feeds.feed.feeditems' feed}}
+        {{/link-to}}
+      {{/each}}
+      </ul>
+    </div>
+  </div>
 
-<ul>
-{{#each model as |feed|}}
-  <li>{{link-to feed.title 'feeds.feed' feed.id}}</li>
-{{/each}}
-</ul>
-
-{{outlet}}
+  {{outlet}}
+</div>

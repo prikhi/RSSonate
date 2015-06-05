@@ -1,12 +1,1 @@
-<h1>{{model.title}}</h1>
-
-<p>{{model.description}}</p>
-
-<ul>
-  {{#each model.items as |item|}}
-    <li>{{link-to item.title 'feeds.feed.feeditem' model.id item.id}}</li>
-  {{/each}}
-</ul>
-
-{{! Feed Item }}
 {{outlet}}
