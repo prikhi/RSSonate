@@ -1,12 +1,14 @@
 <div class='col-sm-9'>
   <div class='panel panel-primary' id='items-panel'>
-    <div class='panel-heading'>{{controller.feed.title}} - {{controller.feed.description}}</div>
+    <div class='panel-heading'>{{{controller.feed.title}}}
+      {{#if controller.feed.description}}- {{{controller.feed.description}}}{{/if}}
+    </div>
     <div class='panel-body'>
       <table class='table table-condensed table-striped'><tbody>
       {{#each model as |item|}}
         {{#link-to 'feeds.feed.feeditems.feeditem' feed.id item.id tagName='tr'}}
           {{#link-to 'feeds.feed.feeditems.feeditem' feed.id item.id tagName='td'}}
-            {{link-to item.title 'feeds.feed.feeditems.feeditem' feed.id item.id}}
+            {{#link-to 'feeds.feed.feeditems.feeditem' feed.id item.id}}{{{item.title}}}{{/link-to}}
           {{/link-to}}
         {{/link-to}}
       {{/each}}

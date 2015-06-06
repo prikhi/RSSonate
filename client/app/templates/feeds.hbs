@@ -5,7 +5,7 @@
       <ul class='nav nav-pills nav-stacked'>
       {{#each model as |feed|}}
         {{#link-to 'feeds.feed.feeditems' feed tagName='li' class='presentation'}}
-          {{link-to feed.title 'feeds.feed.feeditems' feed}}
+          {{#link-to 'feeds.feed.feeditems' feed}}{{{feed.title}}}{{/link-to}}
         {{/link-to}}
       {{/each}}
       </ul>

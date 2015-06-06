@@ -1,9 +1,11 @@
 <div class='col-sm-12'>
   <div class='panel panel-primary' id='content-panel'>
-    <div class='panel-heading'>{{model.title}}</div>
+    <div class='panel-heading'>{{{model.title}}}</div>
     <div class='panel-body'>
       <div>{{{model.description}}}</div>
     </div>
-    <div class='panel-footer panel-primary'>{{item-actions model=model previousItem=previousItem nextItem=nextItem}}</div>
+    <div class='panel-footer panel-primary'>
+      {{item-actions model=model previousItem=previousItem nextItem=nextItem}}
+    </div>
   </div>
 </div>
