@@ -1,6 +1,6 @@
 from rest_framework import viewsets
 
-from rssinate.filters import CoalesceFilterBackend
+from rssonate.filters import CoalesceFilterBackend
 from .models import Feed, FeedItem
 from .serializers import FeedSerializer, FeedItemSerializer
 

@@ -1,4 +1,4 @@
-RSSinate
+RSSonate
 --------
 
 A web-based RSS reader using Ember.js on top of a Django API server.
