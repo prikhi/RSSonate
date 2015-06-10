@@ -9,6 +9,11 @@ export default DS.Model.extend({
   published: DS.attr('date'),
 
   formattedDate: Ember.computed('published', function() {
-    return this.get('published').toLocaleDateString();
+    let published = this.get('published');
+    if (published instanceof Date && !isNaN(published.valueOf())) {
+      return published.toLocaleDateString();
+    } else {
+      return "";
+    }
   }),
 });
