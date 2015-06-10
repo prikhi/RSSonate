@@ -1,9 +1,9 @@
 import Ember from 'ember';
 
 export default Ember.Controller.extend({
-  needs: ["feeds/feed"],
+  needs: ["feeds/feed/feeditems"],
 
-  items: Ember.computed.alias('controllers.feeds/feed.model.items.[]'),
+  items: Ember.computed.alias('controllers.feeds/feed/feeditems.filteredResults.[]'),
 
   nextItem: Ember.computed('model', 'items', function() {
       /* Next is Younger & Items is in descening age, so we get the previous
