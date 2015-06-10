@@ -6,9 +6,10 @@
 
     <div>
       <div class='navbar-form navbar-left' role='create'>
-        <div class='form-group form-group-sm'>
-          {{input name='feed-url' type='url' value=newFeedUrl enter='addFeed'
-                  placeholder='Add a Feed By URL...' class='form-control'}}
+        <div class='form-group'>
+          {{input id='add-feed' name='feed-url' type='url' value=newFeedUrl
+                  enter='addFeed' placeholder='Enter an RSS URL...'
+                  class='form-control input-sm'}}
         </div>
       </div>
     </div> <!-- navbar-collapse -->
