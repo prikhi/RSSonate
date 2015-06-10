@@ -2,6 +2,10 @@
   <div class='panel panel-primary' id='items-panel'>
     <div class='panel-heading'>{{{controller.feed.title}}}
       {{#if controller.feed.description}}- {{{controller.feed.description}}}{{/if}}
+      <!-- Refresh Button -->
+      <button class='btn btn-xs btn-success pull-right' {{action 'refresh'}}>
+        <span class='glyphicon glyphicon-refresh {{if isReloading "spinning" ""}}'></span>
+      </button>
     </div>
     <div class='panel-body'>
       <table class='table table-condensed table-striped'><tbody>

@@ -15,6 +15,7 @@ Router.map(function() {
           path: ':feeditem_id',
         });
       });
+      this.route('loading');
     });
   });
 });

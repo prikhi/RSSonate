@@ -1,7 +1,13 @@
 <div class='row'>
   <div class='col-sm-3'>
     <div class='panel panel-primary' id='feeds-panel'>
-      <div class='panel-heading'>Feeds</div>
+      <div class='panel-heading'>
+        Feeds
+        <!-- Refresh Button -->
+        <button class='btn btn-xs btn-success pull-right' {{action 'refresh'}}>
+          <span class='glyphicon glyphicon-refresh {{if isReloading "spinning" ""}}'></span>
+        </button>
+      </div>
       <ul class='nav nav-pills nav-stacked'>
       {{#each model as |feed|}}
         {{#link-to 'feeds.feed.feeditems' feed tagName='li' class='presentation'}}
@@ -12,5 +18,37 @@
     </div>
   </div>
 
-  {{outlet}}
+  {{#if isReloading}}
+    <div class='col-sm-9'>
+      <div class='panel panel-primary' id='items-panel'>
+        <div class='panel-heading'>Refreshing...</div>
+        <div class='panel-body centered'>
+          <div>
+            <span class='glyphicon glyphicon-refresh {{if isReloading "spinning" ""}}'></span>
+            <p>Fetching the latest items...</p>
+            <div id='refresh-progress' class='progress'>
+              <div class='progress-bar progress-bar-striped active'
+                   role='progressbar' aria-valuenow={{refreshPercentage}}
+                   aria-valuemin=0 aria-valuemax=100
+                   style="width: {{refreshPercentage}}%;">
+                <span class='sr-only'>{{refreshPercentage}}%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class='col-sm-12'>
+      <div class='panel panel-primary' id='content-panel'>
+        <div class='panel-heading'>Loading</div>
+        <div class='panel-body centered'>
+          <div>
+            <p>Please wait for the Feed to load...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  {{else}}
+    {{outlet}}
+  {{/if}}
 </div>

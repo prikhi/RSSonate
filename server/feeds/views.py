@@ -1,4 +1,7 @@
+from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
+from rest_framework.decorators import detail_route
+from rest_framework.response import Response
 
 from rssonate.filters import CoalesceFilterBackend
 from .models import Feed, FeedItem
@@ -9,6 +12,13 @@ class FeedViewSet(viewsets.ModelViewSet):
     '''API endpoint that allows feeds to be added, edited or viewed.'''
     queryset = Feed.objects.all()
     serializer_class = FeedSerializer
+
+    @detail_route(methods=['put'])
+    def refresh(self, request, pk=None):
+        """API Endpoint for fetching the latest items from a Feed."""
+        feed = get_object_or_404(Feed, id=pk)
+        feed.update_items()
+        return Response({"result": "ok"})
 
 
 class FeedItemViewSet(viewsets.ReadOnlyModelViewSet):

@@ -20,4 +20,5 @@ export default Ember.Controller.extend({
       let index = items.indexOf(this.get('model'));
       return items.objectAt(index + 1);
   }),
+
 });

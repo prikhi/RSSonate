@@ -14,6 +14,12 @@ var app = new EmberApp({
 app.import('bower_components/bootstrap/dist/fonts/glyphicons-halflings-regular.woff2', {
   destDir: 'fonts'
 });
+app.import('bower_components/bootstrap/dist/fonts/glyphicons-halflings-regular.woff', {
+  destDir: 'fonts'
+});
+app.import('bower_components/bootstrap/dist/fonts/glyphicons-halflings-regular.ttf', {
+  destDir: 'fonts'
+});
 /* Bootstrap Javascript */
 app.import('./bower_components/bootstrap/dist/js/bootstrap.min.js');
 
