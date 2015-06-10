@@ -14,13 +14,14 @@
 @table-bg-active:               @component-active-bg;
 @table-condensed-cell-padding:  2px;
 
+
 /* Fix active table row text color */
-.table tbody tr a.active {
+.table tbody tr.active, .table tbody tr a.active {
   color: @component-active-color;
 }
 /* Fix color of striped active table row */
-table.table.table-striped tbody tr td.active {
-  border-top-color: @component-active-bg;
+table.table.table-striped tbody .active {
+  border-color: @component-active-bg;
 }
 
 /* Reduce spacing from bottom of panels & nav */
@@ -34,6 +35,9 @@ table.table.table-striped tbody tr td.active {
 html, body,  {
   height: 100%;
 }
+
+/* Clickable items turn the cursor into a pointer */
+.clickable { cursor: pointer; }
 
 /* Fix the height of the top panels */
 #feeds-panel > ul,  #items-panel > .panel-body {
@@ -61,7 +65,7 @@ html, body,  {
 }
 
 /* Push the table text over a little */
-#items-panel td {
+#items-panel td, #items-panel th {
   padding-left: 0.7em;
 }
 
