@@ -4,6 +4,7 @@ import Html exposing (Html)
 import Html.Attributes exposing (type_, value, placeholder)
 import Html.Events exposing (onSubmit, onInput, onClick)
 import Http
+import HttpBuilder
 import Json.Decode as Decode
 import Json.Encode as Encode
 import Markdown
@@ -154,24 +155,27 @@ update msg model =
 
 addFeed : String -> Cmd Msg
 addFeed feedUrl =
-    Http.post "//localhost:8000/feeds/"
-        (Http.jsonBody <| Encode.object [ ( "feed_url", Encode.string feedUrl ) ])
-        feedDecoder
-        |> Http.send FeedAdded
+    HttpBuilder.post "/api/feeds/"
+        |> HttpBuilder.withHeader "Accept" "application/json"
+        |> HttpBuilder.withJsonBody (Encode.object [ ( "feed_url", Encode.string feedUrl ) ])
+        |> HttpBuilder.toRequest (HttpBuilder.jsonReader feedDecoder)
+        |> Http.send (Result.map .data >> FeedAdded)
 
 
 fetchFeeds : Cmd Msg
 fetchFeeds =
-    Http.get "//localhost:8000/feeds/"
-        (Decode.field "results" (Decode.list feedDecoder))
-        |> Http.send FeedsFetched
+    HttpBuilder.get "/api/feeds/"
+        |> HttpBuilder.withHeader "Accept" "application/json"
+        |> HttpBuilder.toRequest (HttpBuilder.jsonReader <| Decode.field "results" <| Decode.list feedDecoder)
+        |> Http.send (Result.map .data >> FeedsFetched)
 
 
 fetchFeedItems : Cmd Msg
 fetchFeedItems =
-    Http.get "//localhost:8000/feeditems/"
-        (Decode.field "results" (Decode.list feedItemDecoder))
-        |> Http.send FeedItemsFetched
+    HttpBuilder.get "/api/feeditems/"
+        |> HttpBuilder.withHeader "Accept" "application/json"
+        |> HttpBuilder.toRequest (HttpBuilder.jsonReader <| Decode.field "results" <| Decode.list feedItemDecoder)
+        |> Http.send (Result.map .data >> FeedItemsFetched)
 
 
 
