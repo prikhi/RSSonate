@@ -1,8 +1,12 @@
 module Main exposing (..)
 
 import Html exposing (Html)
+import Html.Attributes exposing (type_, value, placeholder)
+import Html.Events exposing (onSubmit, onInput, onClick)
 import Http
 import Json.Decode as Decode
+import Json.Encode as Encode
+import Markdown
 
 
 main : Program Never Model Msg
@@ -22,6 +26,9 @@ main =
 type alias Model =
     { feeds : List Feed
     , feedItems : List FeedItem
+    , addFeedInput : String
+    , currentFeed : Maybe FeedId
+    , currentFeedItem : Maybe FeedItemId
     }
 
 
@@ -29,8 +36,11 @@ init : ( Model, Cmd Msg )
 init =
     ( { feeds = []
       , feedItems = []
+      , addFeedInput = ""
+      , currentFeed = Nothing
+      , currentFeedItem = Nothing
       }
-    , fetchFeeds
+    , Cmd.batch [ fetchFeeds, fetchFeedItems ]
     )
 
 
@@ -70,22 +80,84 @@ type alias FeedItem =
     }
 
 
+feedItemDecoder : Decode.Decoder FeedItem
+feedItemDecoder =
+    Decode.map5 FeedItem
+        (Decode.field "id" Decode.int)
+        (Decode.field "feed" Decode.int)
+        (Decode.field "title" Decode.string)
+        (Decode.field "link" Decode.string)
+        (Decode.field "description" Decode.string)
+
+
 
 {- Update -}
 
 
+type alias HttpData a =
+    Result Http.Error a
+
+
 type Msg
-    = FeedsFetched (Result Http.Error (List Feed))
+    = AddFeedInputChanged String
+    | AddFeedFormSubmitted
+    | SetCurrentFeed FeedId
+    | SetCurrentFeedItem FeedItemId
+    | FeedAdded (HttpData Feed)
+    | FeedsFetched (HttpData (List Feed))
+    | FeedItemsFetched (HttpData (List FeedItem))
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        AddFeedInputChanged newUrl ->
+            ( { model | addFeedInput = newUrl }, Cmd.none )
+
+        AddFeedFormSubmitted ->
+            ( model, addFeed model.addFeedInput )
+
+        SetCurrentFeed id ->
+            ( { model
+                | currentFeed = Just id
+                , currentFeedItem = Nothing
+              }
+            , fetchFeedItems
+            )
+
+        SetCurrentFeedItem id ->
+            ( { model | currentFeedItem = Just id }, Cmd.none )
+
+        FeedAdded (Ok newFeed) ->
+            ( { model
+                | feeds = newFeed :: model.feeds
+                , addFeedInput = ""
+              }
+            , Cmd.none
+            )
+
+        FeedAdded (Err _) ->
+            ( model, Cmd.none )
+
         FeedsFetched (Ok feeds) ->
             ( { model | feeds = feeds }, Cmd.none )
 
         FeedsFetched (Err _) ->
             ( model, Cmd.none )
+
+        FeedItemsFetched (Ok items) ->
+            ( { model | feedItems = items }, Cmd.none )
+
+        FeedItemsFetched (Err _) ->
+            ( model, Cmd.none )
+
+
+addFeed : String -> Cmd Msg
+addFeed feedUrl =
+    Http.post "//localhost:8000/feeds/"
+        (Http.jsonBody <| Encode.object [ ( "feed_url", Encode.string feedUrl ) ])
+        feedDecoder
+        |> Http.send FeedAdded
 
 
 fetchFeeds : Cmd Msg
@@ -95,10 +167,75 @@ fetchFeeds =
         |> Http.send FeedsFetched
 
 
+fetchFeedItems : Cmd Msg
+fetchFeedItems =
+    Http.get "//localhost:8000/feeditems/"
+        (Decode.field "results" (Decode.list feedItemDecoder))
+        |> Http.send FeedItemsFetched
+
+
 
 {- View -}
 
 
 view : Model -> Html Msg
 view model =
-    Html.ul [] <| List.map (\f -> Html.li [] [ Html.text f.title ]) model.feeds
+    let
+        feeds =
+            Html.ul [] <| List.map feedListItem model.feeds
+
+        items =
+            model.currentFeed
+                |> Maybe.map (feedItemsList model)
+                |> Maybe.withDefault (Html.text "")
+
+        item =
+            model.currentFeedItem
+                |> Maybe.andThen (itemDisplay model)
+                |> Maybe.withDefault (Html.text "")
+    in
+        Html.div []
+            [ Html.form [ onSubmit AddFeedFormSubmitted ]
+                [ Html.input
+                    [ type_ "url"
+                    , value model.addFeedInput
+                    , onInput AddFeedInputChanged
+                    , placeholder "Enter an RSS URL..."
+                    ]
+                    []
+                ]
+            , feeds
+            , items
+            , item
+            ]
+
+
+feedListItem : Feed -> Html Msg
+feedListItem feed =
+    Html.li [ onClick <| SetCurrentFeed feed.id ] [ Html.text feed.title ]
+
+
+feedItemsList : Model -> FeedId -> Html Msg
+feedItemsList model feedId =
+    let
+        items =
+            List.filter (\fi -> fi.feed == feedId) model.feedItems
+
+        itemLi i =
+            Html.li [ onClick <| SetCurrentFeedItem i.id ] [ Html.text i.title ]
+    in
+        Html.ul [] <| List.map itemLi items
+
+
+itemDisplay : Model -> FeedItemId -> Maybe (Html Msg)
+itemDisplay model itemId =
+    let
+        mItem =
+            List.filter (\fi -> fi.id == itemId) model.feedItems |> List.head
+    in
+        Maybe.map (\item -> Html.p [] [ safeHtmlString item.description ]) mItem
+
+
+safeHtmlString : String -> Html msg
+safeHtmlString =
+    Markdown.toHtml []
