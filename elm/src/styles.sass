@@ -1,0 +1,53 @@
+$spacer: 0.5rem
+$card-spacer-x: 5px
+$card-spacer-y: 5px
+$grid-gutter-width-base: 6px
+$font-size-root: 14px
+$table-sm-cell-padding: .2rem
+
+$nav-link-padding: 4px 8px
+$nav-pills-border-radius: 0
+
+@import "~bootstrap/scss/bootstrap-flex"
+
+
+html, body
+  height: 100%
+
+.card, .card-inverse .card-footer
+  border-color: $component-active-bg
+
+.navbar, .card
+  margin-bottom: $grid-gutter-width-base
+
+.clickable
+  cursor: pointer
+
+.card-block
+  padding-top: 0
+  padding-bottom: 0
+
+#feeds-panel > ul,  #items-panel > .card-block
+  height: 215px
+  overflow-y: auto
+  margin-bottom: 0
+
+#feeds-panel li:hover
+  background-color: rgba(0,0,0,.075)
+
+#items-panel
+  .card-block
+    padding: 0
+  .table
+    tr.active
+      color: $component-active-color
+      background-color: $component-active-bg
+      border-color: $component-active-bg
+    th, td
+      padding-left: 10px
+
+#content-block
+  height: 100%
+  min-height: 200px
+  overflow-y: auto
+
