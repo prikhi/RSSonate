@@ -59,15 +59,21 @@ page model =
                 , onClick RefreshFeedsClicked
                 ]
                 [ icon "refresh" ]
+
+        collapseClass =
+            if model.maximizeItemView then
+                " collapse"
+            else
+                ""
     in
-        [ div [ class "col-sm-3" ]
+        [ div [ class <| "col-sm-3" ++ collapseClass ]
             [ div [ id "feeds-panel", class "card card-inverse" ]
                 [ div [ class "card-header card-primary clearfix" ]
                     [ text "Feeds", refreshFeedsButton ]
                 , feedsPanel model.feeds model.currentFeed
                 ]
             ]
-        , div [ class "col-sm-9" ]
+        , div [ class <| "col-sm-9" ++ collapseClass ]
             [ div [ id "items-panel", class "card card-inverse" ] <|
                 itemsPanel maybeFeed model.currentFeedItem feedItems
             ]
@@ -152,10 +158,20 @@ itemPanel maybeItem feedItems =
                     a [ class "btn btn-primary", href item.link, target "_blank" ]
                         [ text "View on Site" ]
 
-        itemHeader =
+        headerText =
             maybeItem
                 |> Maybe.map .title
                 |> Maybe.withDefault "Select an Item"
+
+        maximizeButton =
+            if maybeItem == Nothing then
+                text ""
+            else
+                button
+                    [ class "btn btn-sm btn-default float-xs-right"
+                    , onClick ToggleItemViewMaximized
+                    ]
+                    [ icon "arrows-alt" ]
 
         itemFooter =
             maybeItem
@@ -181,7 +197,10 @@ itemPanel maybeItem feedItems =
                     ]
                 ]
     in
-        [ div [ class "card-header card-primary" ] [ text itemHeader ]
+        [ div [ class "card-header card-primary clearfix" ]
+            [ text headerText
+            , maximizeButton
+            ]
         , itemDisplay maybeItem
         , itemFooter
         ]

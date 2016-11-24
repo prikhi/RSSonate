@@ -24,6 +24,7 @@ init =
       , addFeedInput = ""
       , currentFeed = Nothing
       , currentFeedItem = Nothing
+      , maximizeItemView = False
       }
     , Cmd.batch [ fetchFeeds, fetchFeedItems ]
     )
@@ -58,6 +59,11 @@ update msg model =
 
         RefreshFeedClicked id ->
             ( model, refreshFeed id )
+
+        ToggleItemViewMaximized ->
+            ( { model | maximizeItemView = not model.maximizeItemView }
+            , triggerResize ()
+            )
 
         ContentScrolledToTop _ ->
             ( model, Cmd.none )

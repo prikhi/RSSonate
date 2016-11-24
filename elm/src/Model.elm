@@ -9,6 +9,7 @@ type alias Model =
     , addFeedInput : String
     , currentFeed : Maybe FeedId
     , currentFeedItem : Maybe FeedItemId
+    , maximizeItemView : Bool
     }
 
 
