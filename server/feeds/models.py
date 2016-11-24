@@ -50,6 +50,7 @@ class Feed(models.Model):
         '''Retrieve and create new items.'''
         entries = feedparser.parse(self.feed_url).entries
 
+        new_items = []
         for entry in entries:
             item_entered = self.items.filter(entry_id=entry['id']).exists()
             if not item_entered:
@@ -61,6 +62,8 @@ class Feed(models.Model):
                 if published:
                     item.published = datetime.datetime(*published[:-2])
                 item.save()
+                new_items.append(item)
+        return new_items
 
 
 

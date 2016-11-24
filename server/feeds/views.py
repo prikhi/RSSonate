@@ -17,8 +17,9 @@ class FeedViewSet(viewsets.ModelViewSet):
     def refresh(self, request, pk=None):
         """API Endpoint for fetching the latest items from a Feed."""
         feed = get_object_or_404(Feed, id=pk)
-        feed.update_items()
-        return Response({"result": "ok"})
+        new_items = feed.update_items()
+        data = FeedItemSerializer(new_items, many=True).data
+        return Response({"results": data})
 
 
 class FeedItemViewSet(viewsets.ReadOnlyModelViewSet):
