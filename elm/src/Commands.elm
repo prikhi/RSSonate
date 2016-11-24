@@ -26,7 +26,7 @@ fetchFeeds : Cmd Msg
 fetchFeeds =
     HttpBuilder.get "/api/feeds/"
         |> HttpBuilder.withHeader "Accept" "application/json"
-        |> HttpBuilder.toRequest (HttpBuilder.jsonReader <| Decode.field "results" <| Decode.list feedDecoder)
+        |> HttpBuilder.toRequest (HttpBuilder.jsonReader <| Decode.list feedDecoder)
         |> Http.send (Result.map .data >> FeedsFetched)
 
 
@@ -34,7 +34,7 @@ fetchFeedItems : Cmd Msg
 fetchFeedItems =
     HttpBuilder.get "/api/feeditems/"
         |> HttpBuilder.withHeader "Accept" "application/json"
-        |> HttpBuilder.toRequest (HttpBuilder.jsonReader <| Decode.field "results" <| Decode.list feedItemDecoder)
+        |> HttpBuilder.toRequest (HttpBuilder.jsonReader <| Decode.list feedItemDecoder)
         |> Http.send (Result.map .data >> FeedItemsFetched)
 
 
