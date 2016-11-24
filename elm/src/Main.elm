@@ -51,6 +51,14 @@ update msg model =
             , Cmd.batch [ triggerResize (), scrollContentToTop ]
             )
 
+        RefreshFeedsClicked ->
+            ( model
+            , Cmd.batch <| List.map (\feed -> refreshFeed feed.id) model.feeds
+            )
+
+        RefreshFeedClicked id ->
+            ( model, refreshFeed id )
+
         ContentScrolledToTop _ ->
             ( model, Cmd.none )
 
@@ -63,6 +71,12 @@ update msg model =
             )
 
         FeedAdded (Err _) ->
+            ( model, Cmd.none )
+
+        FeedRefreshed (Ok newItems) ->
+            ( { model | feedItems = newItems ++ model.feedItems }, Cmd.none )
+
+        FeedRefreshed (Err _) ->
             ( model, Cmd.none )
 
         FeedsFetched (Ok feeds) ->

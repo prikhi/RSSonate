@@ -52,10 +52,18 @@ page model =
             model.currentFeed
                 |> Maybe.map (\feedId -> List.filter (\feedItem -> feedItem.feed == feedId) model.feedItems)
                 |> Maybe.withDefault []
+
+        refreshFeedsButton =
+            button
+                [ class "float-xs-right btn btn-sm btn-success"
+                , onClick RefreshFeedsClicked
+                ]
+                [ icon "refresh" ]
     in
         [ div [ class "col-sm-3" ]
             [ div [ id "feeds-panel", class "card card-inverse" ]
-                [ div [ class "card-header card-primary" ] [ text "Feeds" ]
+                [ div [ class "card-header card-primary clearfix" ]
+                    [ text "Feeds", refreshFeedsButton ]
                 , feedsPanel model.feeds model.currentFeed
                 ]
             ]
@@ -90,12 +98,22 @@ feedsPanel feeds maybeFeedId =
 itemsPanel : Maybe Feed -> Maybe FeedId -> List FeedItem -> List (Html Msg)
 itemsPanel maybeFeed maybeFeedItemId feedItems =
     let
-        itemsHeader =
+        headerText =
             maybeFeed
                 |> Maybe.map .title
                 |> Maybe.withDefault "Select a Feed"
+
+        refreshButton feed =
+            button
+                [ class "float-xs-right btn btn-sm btn-success"
+                , onClick <| RefreshFeedClicked feed.id
+                ]
+                [ icon "refresh" ]
     in
-        [ div [ class "card-header card-primary" ] [ text itemsHeader ]
+        [ div [ class "card-header card-primary clearfix" ]
+            [ text headerText
+            , maybeFeed |> Maybe.map refreshButton |> Maybe.withDefault (text "")
+            ]
         , div [ class "card-block" ] [ feedItemTable maybeFeedItemId feedItems ]
         ]
 
@@ -211,6 +229,11 @@ nextItem list currentId =
                 Just y.id
             else
                 nextItem (y :: ys) currentId
+
+
+icon : String -> Html msg
+icon name =
+    node "i" [ class <| "fa fa-" ++ name ] []
 
 
 safeHtmlString : String -> Html msg

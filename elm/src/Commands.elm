@@ -6,7 +6,7 @@ import HttpBuilder
 import Json.Decode as Decode
 import Json.Encode as Encode
 import Messages exposing (Msg(..))
-import Model exposing (feedDecoder, feedItemDecoder)
+import Model exposing (FeedId, feedDecoder, feedItemDecoder)
 import Task
 
 
@@ -20,6 +20,14 @@ addFeed feedUrl =
         |> HttpBuilder.withJsonBody (Encode.object [ ( "feed_url", Encode.string feedUrl ) ])
         |> HttpBuilder.toRequest (HttpBuilder.jsonReader feedDecoder)
         |> Http.send (Result.map .data >> FeedAdded)
+
+
+refreshFeed : FeedId -> Cmd Msg
+refreshFeed id =
+    HttpBuilder.put ("/api/feeds/" ++ toString id ++ "/refresh/")
+        |> HttpBuilder.withHeader "Accept" "application/json"
+        |> HttpBuilder.toRequest (HttpBuilder.jsonReader <| Decode.field "results" <| Decode.list feedItemDecoder)
+        |> Http.send (Result.map .data >> FeedRefreshed)
 
 
 fetchFeeds : Cmd Msg
