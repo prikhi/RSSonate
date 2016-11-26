@@ -79,6 +79,7 @@ WSGI_APPLICATION = 'rssonate.wsgi.application'
 
 # REST Settings
 REST_FRAMEWORK = {
+    'DEFAULT_FILTER_BACKENDS': ('django_filters.rest_framework.DjangoFilterBackend',),
     'DEFAULT_PERMISSION_CLASSES': ('rest_framework.permissions.AllowAny',),
     'PAGE_SIZE': 0,
 }

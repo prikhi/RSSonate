@@ -27,5 +27,4 @@ class FeedItemViewSet(viewsets.ReadOnlyModelViewSet):
     '''API endpoint that allows feeds to be added, edited or viewed.'''
     queryset = FeedItem.objects.all()
     serializer_class = FeedItemSerializer
-    filter_backends = (filters.DjangoFilterBackend,)
     filter_fields = ('feed',)
