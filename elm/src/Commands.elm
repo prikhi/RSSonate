@@ -1,5 +1,6 @@
 port module Commands exposing (..)
 
+import Dom
 import Dom.Scroll as Scroll
 import Http
 import HttpBuilder
@@ -7,7 +8,9 @@ import Json.Decode as Decode
 import Json.Encode as Encode
 import Messages exposing (Msg(..))
 import Model exposing (FeedId, feedDecoder, feedItemDecoder)
+import Process
 import Task
+import Time
 
 
 port triggerResize : () -> Cmd msg
@@ -50,3 +53,10 @@ scrollContentToTop : Cmd Msg
 scrollContentToTop =
     Scroll.toTop "content-block"
         |> Task.attempt ContentScrolledToTop
+
+
+focusContent : Cmd Msg
+focusContent =
+    Process.sleep (Time.millisecond * 100)
+        |> Task.andThen (\_ -> Dom.focus "content-block")
+        |> Task.attempt ContentFocused

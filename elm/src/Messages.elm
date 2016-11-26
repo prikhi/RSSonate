@@ -18,6 +18,7 @@ type Msg
     | RefreshFeedClicked FeedId
     | ToggleItemViewMaximized
     | ContentScrolledToTop (Result Dom.Error ())
+    | ContentFocused (Result Dom.Error ())
     | FeedAdded (HttpData Feed)
     | FeedRefreshed (HttpData (List FeedItem))
     | FeedsFetched (HttpData (List Feed))
