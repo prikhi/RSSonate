@@ -8,7 +8,7 @@ A web-based RSS reader built with Elm on top of a Django API server.
     pip install -r requirements.py
     ./manage.py runserver 0.0.0.0:8000
 
-    cd elm
+    cd client
     npm install
     npm run dev
 
