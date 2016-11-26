@@ -41,9 +41,10 @@ fetchFeeds =
         |> Http.send (Result.map .data >> FeedsFetched)
 
 
-fetchFeedItems : Cmd Msg
-fetchFeedItems =
-    HttpBuilder.get "/api/feeditems/"
+fetchItemsForFeed : FeedId -> Cmd Msg
+fetchItemsForFeed id =
+    HttpBuilder.url "/api/feeditems/" [ ( "feed", toString id ) ]
+        |> HttpBuilder.get
         |> HttpBuilder.withHeader "Accept" "application/json"
         |> HttpBuilder.toRequest (HttpBuilder.jsonReader <| Decode.list feedItemDecoder)
         |> Http.send (Result.map .data >> FeedItemsFetched)

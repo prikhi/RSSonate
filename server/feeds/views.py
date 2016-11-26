@@ -1,4 +1,5 @@
 from django.shortcuts import get_object_or_404
+from django_filters import rest_framework as filters
 from rest_framework import viewsets
 from rest_framework.decorators import detail_route
 from rest_framework.response import Response
@@ -26,4 +27,5 @@ class FeedItemViewSet(viewsets.ReadOnlyModelViewSet):
     '''API endpoint that allows feeds to be added, edited or viewed.'''
     queryset = FeedItem.objects.all()
     serializer_class = FeedItemSerializer
-    filter_backends = (CoalesceFilterBackend,)
+    filter_backends = (filters.DjangoFilterBackend,)
+    filter_fields = ('feed',)

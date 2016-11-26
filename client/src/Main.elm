@@ -29,7 +29,7 @@ init =
       , isRefreshingFeed = False
       , refreshingFeedsStatus = RemoteStatus.initial
       }
-    , Cmd.batch [ fetchFeeds, fetchFeedItems ]
+    , Cmd.batch [ fetchFeeds ]
     )
 
 
@@ -47,7 +47,7 @@ update msg model =
                 | currentFeed = Just id
                 , currentFeedItem = Nothing
               }
-            , fetchFeedItems
+            , fetchItemsForFeed id
             )
 
         SetCurrentFeedItem id ->
