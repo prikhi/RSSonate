@@ -1,5 +1,6 @@
 module Model exposing (..)
 
+import Date
 import Json.Decode as Decode
 import RemoteStatus
 
@@ -49,14 +50,30 @@ type alias FeedItem =
     , title : String
     , link : String
     , description : String
+    , published : Maybe Date.Date
     }
 
 
 feedItemDecoder : Decode.Decoder FeedItem
 feedItemDecoder =
-    Decode.map5 FeedItem
+    Decode.map6 FeedItem
         (Decode.field "id" Decode.int)
         (Decode.field "feed" Decode.int)
         (Decode.field "title" Decode.string)
         (Decode.field "link" Decode.string)
         (Decode.field "description" Decode.string)
+        (Decode.field "published" (Decode.nullable decodeDate))
+
+
+decodeDate : Decode.Decoder Date.Date
+decodeDate =
+    let
+        resultToDecoder result =
+            case result of
+                Ok v ->
+                    Decode.succeed v
+
+                Err e ->
+                    Decode.fail e
+    in
+        Decode.string |> Decode.andThen (Date.fromString >> resultToDecoder)

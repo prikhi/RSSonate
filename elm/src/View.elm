@@ -1,5 +1,6 @@
 module View exposing (view)
 
+import Date.Format
 import Html exposing (..)
 import Html.Attributes exposing (type_, value, placeholder, class, href, id, target, disabled, attribute)
 import Html.Events exposing (onSubmit, onInput, onClick)
@@ -166,15 +167,25 @@ feedItemTable maybeItemId items =
             else
                 "clickable"
 
+        formatDate =
+            Maybe.map (Date.Format.format "%m/%d/%Y") >> Maybe.withDefault ""
+
         itemRow item =
             tr [ class <| rowClass item, onClick <| SetCurrentFeedItem item.id ]
-                [ td [] [ text item.title ] ]
+                [ td [] [ text item.title ]
+                , td [] [ text <| formatDate item.published ]
+                ]
     in
         if List.isEmpty items then
             text ""
         else
             table [ class "table table-sm table-striped table-hover" ]
-                [ thead [] [ tr [] [ th [] [ text "Title" ] ] ]
+                [ thead []
+                    [ tr []
+                        [ th [] [ text "Title" ]
+                        , th [] [ text "Date" ]
+                        ]
+                    ]
                 , tbody [] <| List.map itemRow items
                 ]
 
