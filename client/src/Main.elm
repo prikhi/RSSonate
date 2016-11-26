@@ -5,6 +5,7 @@ import Html exposing (Html)
 import Messages exposing (Msg(..))
 import Model exposing (Model, feedDecoder, feedItemDecoder)
 import RemoteStatus
+import Set
 import View exposing (view)
 
 
@@ -28,6 +29,7 @@ init =
       , maximizeItemView = False
       , isRefreshingFeed = False
       , refreshingFeedsStatus = RemoteStatus.initial
+      , fetchedFeeds = Set.empty
       }
     , Cmd.batch [ fetchFeeds ]
     )
@@ -43,12 +45,16 @@ update msg model =
             ( model, addFeed model.addFeedInput )
 
         SetCurrentFeed id ->
-            ( { model
-                | currentFeed = Just id
-                , currentFeedItem = Nothing
-              }
-            , fetchItemsForFeed id
-            )
+            let
+                cmd =
+                    if Set.member id model.fetchedFeeds then
+                        Cmd.none
+                    else
+                        fetchItemsForFeed id
+            in
+                ( { model | currentFeed = Just id, currentFeedItem = Nothing }
+                , cmd
+                )
 
         SetCurrentFeedItem id ->
             ( { model | currentFeedItem = Just id }
@@ -103,10 +109,15 @@ update msg model =
         FeedsFetched (Err _) ->
             ( model, Cmd.none )
 
-        FeedItemsFetched (Ok items) ->
-            ( { model | feedItems = items }, Cmd.none )
+        FeedItemsFetched id (Ok items) ->
+            ( { model
+                | feedItems = items ++ model.feedItems
+                , fetchedFeeds = Set.insert id model.fetchedFeeds
+              }
+            , Cmd.none
+            )
 
-        FeedItemsFetched (Err _) ->
+        FeedItemsFetched _ (Err _) ->
             ( model, Cmd.none )
 
 

@@ -3,6 +3,7 @@ module Model exposing (..)
 import Date
 import Json.Decode as Decode
 import RemoteStatus
+import Set
 
 
 type alias Model =
@@ -14,6 +15,7 @@ type alias Model =
     , maximizeItemView : Bool
     , isRefreshingFeed : Bool
     , refreshingFeedsStatus : RemoteStatus.Model
+    , fetchedFeeds : Set.Set FeedId
     }
 
 

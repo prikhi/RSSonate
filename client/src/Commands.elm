@@ -47,7 +47,7 @@ fetchItemsForFeed id =
         |> HttpBuilder.get
         |> HttpBuilder.withHeader "Accept" "application/json"
         |> HttpBuilder.toRequest (HttpBuilder.jsonReader <| Decode.list feedItemDecoder)
-        |> Http.send (Result.map .data >> FeedItemsFetched)
+        |> Http.send (Result.map .data >> FeedItemsFetched id)
 
 
 scrollContentToTop : Cmd Msg

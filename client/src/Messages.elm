@@ -22,4 +22,4 @@ type Msg
     | FeedAdded (HttpData Feed)
     | FeedRefreshed (HttpData (List FeedItem))
     | FeedsFetched (HttpData (List Feed))
-    | FeedItemsFetched (HttpData (List FeedItem))
+    | FeedItemsFetched FeedId (HttpData (List FeedItem))
