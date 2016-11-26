@@ -1,6 +1,7 @@
 module Model exposing (..)
 
 import Json.Decode as Decode
+import RemoteStatus
 
 
 type alias Model =
@@ -10,6 +11,8 @@ type alias Model =
     , currentFeed : Maybe FeedId
     , currentFeedItem : Maybe FeedItemId
     , maximizeItemView : Bool
+    , isRefreshingFeed : Bool
+    , refreshingFeedsStatus : RemoteStatus.Model
     }
 
 

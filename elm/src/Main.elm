@@ -4,6 +4,7 @@ import Commands exposing (..)
 import Html exposing (Html)
 import Messages exposing (Msg(..))
 import Model exposing (Model, feedDecoder, feedItemDecoder)
+import RemoteStatus
 import View exposing (view)
 
 
@@ -25,6 +26,8 @@ init =
       , currentFeed = Nothing
       , currentFeedItem = Nothing
       , maximizeItemView = False
+      , isRefreshingFeed = False
+      , refreshingFeedsStatus = RemoteStatus.initial
       }
     , Cmd.batch [ fetchFeeds, fetchFeedItems ]
     )
@@ -53,12 +56,16 @@ update msg model =
             )
 
         RefreshFeedsClicked ->
-            ( model
+            ( { model
+                | refreshingFeedsStatus =
+                    RemoteStatus.enqueue (RemoteStatus.start model.refreshingFeedsStatus) <|
+                        List.length model.feeds
+              }
             , Cmd.batch <| List.map (\feed -> refreshFeed feed.id) model.feeds
             )
 
         RefreshFeedClicked id ->
-            ( model, refreshFeed id )
+            ( { model | isRefreshingFeed = True }, refreshFeed id )
 
         ToggleItemViewMaximized ->
             ( { model | maximizeItemView = not model.maximizeItemView }
@@ -80,10 +87,12 @@ update msg model =
             ( model, Cmd.none )
 
         FeedRefreshed (Ok newItems) ->
-            ( { model | feedItems = newItems ++ model.feedItems }, Cmd.none )
+            ( markFeedAsRefreshed { model | feedItems = newItems ++ model.feedItems }
+            , Cmd.none
+            )
 
         FeedRefreshed (Err _) ->
-            ( model, Cmd.none )
+            ( markFeedAsRefreshed model, Cmd.none )
 
         FeedsFetched (Ok feeds) ->
             ( { model | feeds = feeds }, Cmd.none )
@@ -96,3 +105,21 @@ update msg model =
 
         FeedItemsFetched (Err _) ->
             ( model, Cmd.none )
+
+
+markFeedAsRefreshed : Model -> Model
+markFeedAsRefreshed model =
+    let
+        incrementedRefreshingStatus =
+            RemoteStatus.finishOne model.refreshingFeedsStatus
+
+        updatedRefreshingStatus =
+            if RemoteStatus.isFinished incrementedRefreshingStatus then
+                RemoteStatus.initial
+            else
+                incrementedRefreshingStatus
+    in
+        { model
+            | isRefreshingFeed = False
+            , refreshingFeedsStatus = updatedRefreshingStatus
+        }

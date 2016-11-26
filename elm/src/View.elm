@@ -1,11 +1,12 @@
 module View exposing (view)
 
 import Html exposing (..)
-import Html.Attributes exposing (type_, value, placeholder, class, href, id, target, disabled)
+import Html.Attributes exposing (type_, value, placeholder, class, href, id, target, disabled, attribute)
 import Html.Events exposing (onSubmit, onInput, onClick)
 import Markdown
 import Messages exposing (Msg(..))
 import Model exposing (Model, FeedId, Feed, FeedItemId, FeedItem)
+import RemoteStatus
 
 
 view : Model -> Html Msg
@@ -53,12 +54,18 @@ page model =
                 |> Maybe.map (\feedId -> List.filter (\feedItem -> feedItem.feed == feedId) model.feedItems)
                 |> Maybe.withDefault []
 
+        refreshIcon =
+            if RemoteStatus.isInProgress model.refreshingFeedsStatus then
+                icon "refresh fa-spin"
+            else
+                icon "refresh"
+
         refreshFeedsButton =
             button
                 [ class "float-xs-right btn btn-sm btn-success"
                 , onClick RefreshFeedsClicked
                 ]
-                [ icon "refresh" ]
+                [ refreshIcon ]
 
         collapseClass =
             if model.maximizeItemView then
@@ -75,7 +82,11 @@ page model =
             ]
         , div [ class <| "col-sm-9" ++ collapseClass ]
             [ div [ id "items-panel", class "card card-inverse" ] <|
-                itemsPanel maybeFeed model.currentFeedItem feedItems
+                itemsPanel maybeFeed
+                    model.currentFeedItem
+                    feedItems
+                    model.isRefreshingFeed
+                    model.refreshingFeedsStatus
             ]
         , div [ class "col-sm-12" ]
             [ div [ id "content-panel", class "card card-inverse" ] <|
@@ -101,26 +112,48 @@ feedsPanel feeds maybeFeedId =
             List.map feedItem feeds
 
 
-itemsPanel : Maybe Feed -> Maybe FeedId -> List FeedItem -> List (Html Msg)
-itemsPanel maybeFeed maybeFeedItemId feedItems =
+itemsPanel : Maybe Feed -> Maybe FeedId -> List FeedItem -> Bool -> RemoteStatus.Model -> List (Html Msg)
+itemsPanel maybeFeed maybeFeedItemId feedItems isRefreshingFeed refreshingFeedsStatus =
     let
         headerText =
             maybeFeed
                 |> Maybe.map .title
                 |> Maybe.withDefault "Select a Feed"
 
+        refreshIcon =
+            if isRefreshingFeed then
+                icon "refresh fa-spin"
+            else
+                icon "refresh"
+
         refreshButton feed =
             button
                 [ class "float-xs-right btn btn-sm btn-success"
                 , onClick <| RefreshFeedClicked feed.id
                 ]
-                [ icon "refresh" ]
+                [ refreshIcon ]
+
+        refreshFeedsProgressBar percentage =
+            div [ id "items-refresh-progress" ]
+                [ div [ class "text-xs-center" ] [ text "Fetching the latest items..." ]
+                , progress
+                    [ class "progress"
+                    , value <| toString percentage
+                    , attribute "max" "100"
+                    ]
+                    []
+                ]
+
+        content =
+            RemoteStatus.percentageCompleted refreshingFeedsStatus
+                |> Maybe.map refreshFeedsProgressBar
+                |> Maybe.withDefault (feedItemTable maybeFeedItemId feedItems)
     in
         [ div [ class "card-header card-primary clearfix" ]
             [ text headerText
             , maybeFeed |> Maybe.map refreshButton |> Maybe.withDefault (text "")
             ]
-        , div [ class "card-block" ] [ feedItemTable maybeFeedItemId feedItems ]
+        , div [ class "card-block" ] [ content ]
         ]
 
 
