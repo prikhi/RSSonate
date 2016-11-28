@@ -1,4 +1,4 @@
-'''Store information for RSS Feeds.'''
+"""Store information for RSS Feeds."""
 import datetime
 import os
 import threading
@@ -10,7 +10,8 @@ import feedparser
 
 
 class Feed(models.Model):
-    '''Information on a single RSS Feed'''
+    """Information on a single RSS Feed"""
+
     # RSS Specs
     feed_url = models.URLField(max_length=500, unique=True)
     title = models.CharField(max_length=200, blank=True)
@@ -20,10 +21,11 @@ class Feed(models.Model):
     published = models.DateTimeField(auto_now_add=True)
 
     def __unicode__(self):
+        """A Feed is identified by it's title or URL."""
         return self.title or self.feed_url
 
     def save(self, *args, **kwargs):
-        '''Fetch & Set the Feed URL's Information.'''
+        """Fetch & Set the Feed URL's Information."""
         feed = feedparser.parse(self.feed_url).feed
         self.title = feed.get('title', '')
         self.description = feed.get('description', '')
@@ -42,12 +44,11 @@ class Feed(models.Model):
         return super(Feed, self).save(*args, **kwargs)
 
     def async_update_items(self):
-        '''Update the Feed in a separate thread.'''
+        """Update the Feed in a separate thread."""
         UpdateFeedThread(self).start()
 
-
     def update_items(self):
-        '''Retrieve and create new items.'''
+        """Retrieve and create new items."""
         entries = feedparser.parse(self.feed_url).entries
 
         new_items = []
@@ -66,9 +67,9 @@ class Feed(models.Model):
         return new_items
 
 
-
 class FeedItem(models.Model):
-    '''A single item fetched from a Feed.'''
+    """A single item fetched from a Feed."""
+
     # RSS Specs
     feed = models.ForeignKey('Feed', related_name='items')
     entry_id = models.CharField(max_length=200)
@@ -77,17 +78,18 @@ class FeedItem(models.Model):
     description = models.TextField()
     published = models.DateTimeField(null=True)
 
-    class Meta:
+    class Meta(object):
         ordering = ('-published',)
 
 
 class UpdateFeedThread(threading.Thread):
-    '''Pull the latest FeedItems from a Feed.'''
+    """Pull the latest FeedItems from a Feed."""
+
     def __init__(self, feed, **kwargs):
-        '''A Feed is required to be passed.'''
+        """A Feed is required to be passed."""
         self.feed = feed
         return super(UpdateFeedThread, self).__init__(**kwargs)
 
     def run(self):
-        '''Add New FeedItems.'''
+        """Add New FeedItems."""
         self.feed.update_items()
