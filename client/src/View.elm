@@ -40,33 +40,33 @@ navbar model =
 page : Model -> List (Html Msg)
 page model =
     let
+        findBy selector items val =
+            List.filter (\i -> selector i == val) items
+
+        findById =
+            findBy .id
+
         maybeFeed =
             model.currentFeed
-                |> Maybe.map (\feedId -> List.filter (\feed -> feed.id == feedId) model.feeds)
+                |> Maybe.map (findById model.feeds)
                 |> Maybe.andThen List.head
 
         maybeFeedItem =
             model.currentFeedItem
-                |> Maybe.map (\itemId -> List.filter (\item -> item.id == itemId) model.feedItems)
+                |> Maybe.map (findById model.feedItems)
                 |> Maybe.andThen List.head
 
         feedItems =
             model.currentFeed
-                |> Maybe.map (\feedId -> List.filter (\feedItem -> feedItem.feed == feedId) model.feedItems)
+                |> Maybe.map (findBy .feed model.feedItems)
                 |> Maybe.withDefault []
-
-        refreshIcon =
-            if RemoteStatus.isInProgress model.refreshingFeedsStatus then
-                icon "refresh fa-spin"
-            else
-                icon "refresh"
 
         refreshFeedsButton =
             button
                 [ class "float-xs-right btn btn-sm btn-success"
                 , onClick RefreshFeedsClicked
                 ]
-                [ refreshIcon ]
+                [ refreshIcon <| RemoteStatus.isInProgress model.refreshingFeedsStatus ]
 
         collapseClass =
             if model.maximizeItemView then
@@ -121,18 +121,12 @@ itemsPanel maybeFeed maybeFeedItemId feedItems isRefreshingFeed refreshingFeedsS
                 |> Maybe.map .title
                 |> Maybe.withDefault "Select a Feed"
 
-        refreshIcon =
-            if isRefreshingFeed then
-                icon "refresh fa-spin"
-            else
-                icon "refresh"
-
         refreshButton feed =
             button
                 [ class "float-xs-right btn btn-sm btn-success"
                 , onClick <| RefreshFeedClicked feed.id
                 ]
-                [ refreshIcon ]
+                [ refreshIcon isRefreshingFeed ]
 
         refreshFeedsProgressBar percentage =
             div [ id "items-refresh-progress" ]
@@ -292,6 +286,14 @@ nextItem list currentId =
                 Just y.id
             else
                 nextItem (y :: ys) currentId
+
+
+refreshIcon : Bool -> Html msg
+refreshIcon isRefreshing =
+    if isRefreshing then
+        icon "refresh fa-spin"
+    else
+        icon "refresh"
 
 
 icon : String -> Html msg
