@@ -50,16 +50,6 @@ fetchItemsForFeed id =
 
 newContentCommands : Cmd Msg
 newContentCommands =
-    Cmd.batch [ scrollContentToTop, focusContent ]
-
-
-scrollContentToTop : Cmd Msg
-scrollContentToTop =
-    Scroll.toTop "content-block"
-        |> Task.attempt ContentScrolledToTop
-
-
-focusContent : Cmd Msg
-focusContent =
     Dom.focus "content-block"
-        |> Task.attempt ContentFocused
+        |> Task.andThen (\() -> Scroll.toTop "content-block")
+        |> Task.attempt DomTaskCompleted

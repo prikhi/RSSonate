@@ -78,10 +78,7 @@ update msg model =
             , triggerResize ()
             )
 
-        ContentScrolledToTop _ ->
-            ( model, Cmd.none )
-
-        ContentFocused _ ->
+        DomTaskCompleted _ ->
             ( model, Cmd.none )
 
         FeedAdded (Ok newFeed) ->
