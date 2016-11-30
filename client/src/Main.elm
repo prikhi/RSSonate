@@ -31,7 +31,7 @@ init =
       , refreshingFeedsStatus = RemoteStatus.initial
       , fetchedFeeds = Set.empty
       }
-    , Cmd.batch [ fetchFeeds ]
+    , Cmd.batch [ fetchFeeds, triggerResize () ]
     )
 
 
