@@ -8,9 +8,7 @@ import Json.Decode as Decode
 import Json.Encode as Encode
 import Messages exposing (Msg(..))
 import Model exposing (FeedId, feedDecoder, feedItemDecoder)
-import Process
 import Task
-import Time
 
 
 port triggerResize : () -> Cmd msg
@@ -50,6 +48,11 @@ fetchItemsForFeed id =
         |> Http.send (Result.map .data >> FeedItemsFetched id)
 
 
+newContentCommands : Cmd Msg
+newContentCommands =
+    Cmd.batch [ scrollContentToTop, focusContent ]
+
+
 scrollContentToTop : Cmd Msg
 scrollContentToTop =
     Scroll.toTop "content-block"
@@ -58,6 +61,5 @@ scrollContentToTop =
 
 focusContent : Cmd Msg
 focusContent =
-    Process.sleep (Time.millisecond * 100)
-        |> Task.andThen (\_ -> Dom.focus "content-block")
+    Dom.focus "content-block"
         |> Task.attempt ContentFocused

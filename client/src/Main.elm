@@ -58,7 +58,7 @@ update msg model =
 
         SetCurrentFeedItem id ->
             ( { model | currentFeedItem = Just id }
-            , Cmd.batch [ triggerResize (), scrollContentToTop, focusContent ]
+            , Cmd.batch [ triggerResize (), newContentCommands ]
             )
 
         RefreshFeedsClicked ->
