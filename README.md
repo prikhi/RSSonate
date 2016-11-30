@@ -14,4 +14,10 @@ A web-based RSS reader built with Elm on top of a Django API server.
 
     firefox http://localhost:7000
 
+You can use the `refresh_feeds` management command along with a cronjob to
+automatically keep your feeds up to date:
+
+    $ crontab -e
+    */360 * * * * bash -c 'source ~/.virtualenvs/rssonate/bin/activate; ~/Projects/RSSonate/server/manage.py refresh_feeds'
+
 ![RSSonate Screenshot](./screenshot.png)
