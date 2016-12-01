@@ -19,15 +19,18 @@ from rest_framework import routers
 from rest_framework.authtoken import views as token_views
 
 from feeds.views import FeedViewSet, FeedItemViewSet
+from users.views import create_user
 
 
 REST_ROUTER = routers.DefaultRouter()
 REST_ROUTER.register(r'feeds', FeedViewSet)
 REST_ROUTER.register(r'feeditems', FeedItemViewSet)
+#REST_ROUTER.register(r'users', UserViewSet)
 
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     url(r'^api-token-auth/', token_views.obtain_auth_token),
+    url(r'^users/$', create_user),
     url(r'^', include(REST_ROUTER.urls)),
 ]
