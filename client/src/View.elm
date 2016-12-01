@@ -166,7 +166,7 @@ feedItemTable maybeItemId items =
 
         itemRow item =
             tr [ class <| rowClass item, onClick <| SetCurrentFeedItem item.id ]
-                [ td [] [ text item.title ]
+                [ td [] [ a [ href "#" ] [ text item.title ] ]
                 , td [] [ text <| formatDate item.published ]
                 ]
     in
