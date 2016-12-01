@@ -88,7 +88,7 @@ class UpdateFeedThread(threading.Thread):
     def __init__(self, feed, **kwargs):
         """A Feed is required to be passed."""
         self.feed = feed
-        return super(UpdateFeedThread, self).__init__(**kwargs)
+        super(UpdateFeedThread, self).__init__(**kwargs)
 
     def run(self):
         """Add New FeedItems."""
