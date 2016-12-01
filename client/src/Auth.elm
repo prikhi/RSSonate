@@ -3,6 +3,7 @@ module Auth
         ( Token
         , Model(..)
         , fromToken
+        , toToken
         , Form
         , initalForm
         , Msg(..)
@@ -38,6 +39,18 @@ type Model
 fromToken : Maybe Token -> Model
 fromToken =
     Maybe.map Authorized >> Maybe.withDefault LoggingIn
+
+
+{-| Generate a potential API Token from an Authentication State
+-}
+toToken : Model -> Maybe Token
+toToken model =
+    case model of
+        Authorized token ->
+            Just token
+
+        _ ->
+            Nothing
 
 
 {-| The Login/Registration Form

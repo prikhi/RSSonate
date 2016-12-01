@@ -25,7 +25,6 @@ from users.views import create_user
 REST_ROUTER = routers.DefaultRouter()
 REST_ROUTER.register(r'feeds', FeedViewSet)
 REST_ROUTER.register(r'feeditems', FeedItemViewSet)
-#REST_ROUTER.register(r'users', UserViewSet)
 
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),

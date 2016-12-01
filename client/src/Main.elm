@@ -38,8 +38,15 @@ init flags =
       , refreshingFeedsStatus = RemoteStatus.initial
       , fetchedFeeds = Set.empty
       }
-    , Cmd.batch [ fetchFeeds, triggerResize () ]
+    , Cmd.batch [ triggerResize () ]
     )
+
+
+mapToken : Model -> (Auth.Token -> b -> Cmd msg) -> b -> Cmd msg
+mapToken { authStatus } func =
+    Auth.toToken authStatus
+        |> Maybe.map func
+        |> Maybe.withDefault (always Cmd.none)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -69,7 +76,7 @@ update msg model =
             ( { model | addFeedInput = newUrl }, Cmd.none )
 
         AddFeedFormSubmitted ->
-            ( model, addFeed model.addFeedInput )
+            ( model, mapToken model addFeed <| model.addFeedInput )
 
         LogoutButtonClicked ->
             ( { model | authStatus = Auth.LoggingIn }, removeAuthToken () )
@@ -80,7 +87,7 @@ update msg model =
                     if Set.member id model.fetchedFeeds then
                         Cmd.none
                     else
-                        fetchItemsForFeed id
+                        mapToken model fetchItemsForFeed <| id
             in
                 ( { model | currentFeed = Just id, currentFeedItem = Nothing }
                 , cmd
@@ -97,11 +104,11 @@ update msg model =
                     RemoteStatus.enqueue (RemoteStatus.start model.refreshingFeedsStatus) <|
                         List.length model.feeds
               }
-            , Cmd.batch <| List.map (\feed -> refreshFeed feed.id) model.feeds
+            , Cmd.batch <| List.map (\feed -> mapToken model refreshFeed <| feed.id) model.feeds
             )
 
         RefreshFeedClicked id ->
-            ( { model | isRefreshingFeed = True }, refreshFeed id )
+            ( { model | isRefreshingFeed = True }, mapToken model refreshFeed <| id )
 
         ToggleItemViewMaximized ->
             ( { model | maximizeItemView = not model.maximizeItemView }
@@ -123,7 +130,7 @@ update msg model =
                     | authStatus = Auth.Authorized token
                     , authForm = Auth.initalForm
                   }
-                , Cmd.batch [ cmd, triggerResize () ]
+                , Cmd.batch [ cmd, fetchFeeds token, triggerResize () ]
                 )
 
         AuthCompleted (Err _) ->

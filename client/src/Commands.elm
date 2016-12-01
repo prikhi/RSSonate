@@ -50,36 +50,40 @@ register form =
         |> Http.send (Result.map .data >> AuthCompleted)
 
 
-addFeed : String -> Cmd Msg
-addFeed feedUrl =
+addFeed : Auth.Token -> String -> Cmd Msg
+addFeed token feedUrl =
     HttpBuilder.post "/api/feeds/"
         |> HttpBuilder.withHeader "Accept" "application/json"
+        |> HttpBuilder.withHeader "Authorization" ("Token " ++ token)
         |> HttpBuilder.withJsonBody (Encode.object [ ( "feed_url", Encode.string feedUrl ) ])
         |> HttpBuilder.toRequest (HttpBuilder.jsonReader feedDecoder)
         |> Http.send (Result.map .data >> FeedAdded)
 
 
-refreshFeed : FeedId -> Cmd Msg
-refreshFeed id =
+refreshFeed : Auth.Token -> FeedId -> Cmd Msg
+refreshFeed token id =
     HttpBuilder.put ("/api/feeds/" ++ toString id ++ "/refresh/")
         |> HttpBuilder.withHeader "Accept" "application/json"
+        |> HttpBuilder.withHeader "Authorization" ("Token " ++ token)
         |> HttpBuilder.toRequest (HttpBuilder.jsonReader <| Decode.field "results" <| Decode.list feedItemDecoder)
         |> Http.send (Result.map .data >> FeedRefreshed)
 
 
-fetchFeeds : Cmd Msg
-fetchFeeds =
+fetchFeeds : Auth.Token -> Cmd Msg
+fetchFeeds token =
     HttpBuilder.get "/api/feeds/"
         |> HttpBuilder.withHeader "Accept" "application/json"
+        |> HttpBuilder.withHeader "Authorization" ("Token " ++ token)
         |> HttpBuilder.toRequest (HttpBuilder.jsonReader <| Decode.list feedDecoder)
         |> Http.send (Result.map .data >> FeedsFetched)
 
 
-fetchItemsForFeed : FeedId -> Cmd Msg
-fetchItemsForFeed id =
+fetchItemsForFeed : Auth.Token -> FeedId -> Cmd Msg
+fetchItemsForFeed token id =
     HttpBuilder.url "/api/feeditems/" [ ( "feed", toString id ) ]
         |> HttpBuilder.get
         |> HttpBuilder.withHeader "Accept" "application/json"
+        |> HttpBuilder.withHeader "Authorization" ("Token " ++ token)
         |> HttpBuilder.toRequest (HttpBuilder.jsonReader <| Decode.list feedItemDecoder)
         |> Http.send (Result.map .data >> FeedItemsFetched id)
 
