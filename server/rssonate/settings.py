@@ -29,6 +29,7 @@ ALLOWED_HOSTS = []
 
 
 # Application definition
+AUTH_USER_MODEL = 'users.User'
 
 INSTALLED_APPS = (
     'django.contrib.admin',
@@ -42,6 +43,7 @@ INSTALLED_APPS = (
     'rest_framework',
 
     'feeds',
+    'users'
 )
 
 MIDDLEWARE_CLASSES = (
