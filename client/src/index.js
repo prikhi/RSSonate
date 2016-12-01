@@ -8,7 +8,8 @@ require('./styles.sass');
 var Elm = require('./Main.elm');
 var node = document.getElementById('main');
 
-var app = Elm.Main.embed(node);
+var token = localStorage.getItem('authToken');
+var app = Elm.Main.embed(node, {"authToken": token});
 
 
 /* Resize the Content Panel to Take Up the Remaining Window Height */
@@ -24,4 +25,12 @@ window.onresize = resizeContentPanel;
 
 app.ports.triggerResize.subscribe(function() {
   setTimeout(resizeContentPanel, 50);
-})
+});
+
+app.ports.storeAuthToken.subscribe(function(token) {
+  localStorage.setItem('authToken', token);
+});
+
+app.ports.removeAuthToken.subscribe(function() {
+  localStorage.removeItem('authToken');
+});

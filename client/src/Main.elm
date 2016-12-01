@@ -1,5 +1,6 @@
 port module Main exposing (..)
 
+import Auth
 import Commands exposing (..)
 import Html exposing (Html)
 import Messages exposing (Msg(..))
@@ -9,9 +10,13 @@ import Set
 import View exposing (view)
 
 
-main : Program Never Model Msg
+type alias Flags =
+    { authToken : Maybe Auth.Token }
+
+
+main : Program Flags Model Msg
 main =
-    Html.program
+    Html.programWithFlags
         { init = init
         , update = update
         , subscriptions = always Sub.none
@@ -19,10 +24,12 @@ main =
         }
 
 
-init : ( Model, Cmd Msg )
-init =
+init : Flags -> ( Model, Cmd Msg )
+init flags =
     ( { feeds = []
       , feedItems = []
+      , authStatus = Auth.fromToken flags.authToken
+      , authForm = Auth.initalForm
       , addFeedInput = ""
       , currentFeed = Nothing
       , currentFeedItem = Nothing
@@ -38,11 +45,34 @@ init =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        AuthFormMsg subMsg ->
+            let
+                ( newStatus, newForm ) =
+                    Auth.update subMsg model.authStatus model.authForm
+            in
+                ( { model | authForm = newForm, authStatus = newStatus }
+                , Cmd.none
+                )
+
+        AuthFormSubmitted ->
+            case model.authStatus of
+                Auth.LoggingIn ->
+                    ( model, login model.authForm )
+
+                Auth.Registering ->
+                    ( model, register model.authForm )
+
+                _ ->
+                    ( model, Cmd.none )
+
         AddFeedInputChanged newUrl ->
             ( { model | addFeedInput = newUrl }, Cmd.none )
 
         AddFeedFormSubmitted ->
             ( model, addFeed model.addFeedInput )
+
+        LogoutButtonClicked ->
+            ( { model | authStatus = Auth.LoggingIn }, removeAuthToken () )
 
         SetCurrentFeed id ->
             let
@@ -79,6 +109,24 @@ update msg model =
             )
 
         DomTaskCompleted _ ->
+            ( model, Cmd.none )
+
+        AuthCompleted (Ok token) ->
+            let
+                cmd =
+                    if model.authForm.remember then
+                        storeAuthToken token
+                    else
+                        Cmd.none
+            in
+                ( { model
+                    | authStatus = Auth.Authorized token
+                    , authForm = Auth.initalForm
+                  }
+                , Cmd.batch [ cmd, triggerResize () ]
+                )
+
+        AuthCompleted (Err _) ->
             ( model, Cmd.none )
 
         FeedAdded (Ok newFeed) ->

@@ -1,5 +1,6 @@
 module Model exposing (..)
 
+import Auth
 import Date
 import Json.Decode as Decode
 import RemoteStatus
@@ -9,6 +10,8 @@ import Set
 type alias Model =
     { feeds : List Feed
     , feedItems : List FeedItem
+    , authForm : Auth.Form
+    , authStatus : Auth.Model
     , addFeedInput : String
     , currentFeed : Maybe FeedId
     , currentFeedItem : Maybe FeedItemId

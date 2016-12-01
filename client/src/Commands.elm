@@ -1,5 +1,6 @@
 port module Commands exposing (..)
 
+import Auth
 import Dom
 import Dom.Scroll as Scroll
 import Http
@@ -11,7 +12,42 @@ import Model exposing (FeedId, feedDecoder, feedItemDecoder)
 import Task
 
 
+port storeAuthToken : String -> Cmd msg
+
+
+port removeAuthToken : () -> Cmd msg
+
+
 port triggerResize : () -> Cmd msg
+
+
+login : Auth.Form -> Cmd Msg
+login form =
+    HttpBuilder.post "/api/api-token-auth/"
+        |> HttpBuilder.withHeader "Accept" "application/json"
+        |> HttpBuilder.withJsonBody
+            (Encode.object
+                [ ( "username", Encode.string form.username )
+                , ( "password", Encode.string form.password )
+                ]
+            )
+        |> HttpBuilder.toRequest (HttpBuilder.jsonReader <| Decode.field "token" Decode.string)
+        |> Http.send (Result.map .data >> AuthCompleted)
+
+
+register : Auth.Form -> Cmd Msg
+register form =
+    HttpBuilder.post "/api/users/"
+        |> HttpBuilder.withHeader "Accept" "application/json"
+        |> HttpBuilder.withJsonBody
+            (Encode.object
+                [ ( "username", Encode.string form.username )
+                , ( "password", Encode.string form.password )
+                , ( "password_again", Encode.string form.passwordAgain )
+                ]
+            )
+        |> HttpBuilder.toRequest (HttpBuilder.jsonReader <| Decode.field "token" Decode.string)
+        |> Http.send (Result.map .data >> AuthCompleted)
 
 
 addFeed : String -> Cmd Msg

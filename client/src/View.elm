@@ -1,8 +1,9 @@
 module View exposing (view)
 
+import Auth
 import Date.Format
 import Html exposing (..)
-import Html.Attributes exposing (type_, value, placeholder, class, href, id, target, disabled, attribute)
+import Html.Attributes exposing (type_, value, placeholder, class, href, id, target, disabled, attribute, checked)
 import Html.Events exposing (onSubmit, onInput, onClick)
 import Markdown
 import Messages exposing (Msg(..))
@@ -12,12 +13,22 @@ import RemoteStatus
 
 view : Model -> Html Msg
 view model =
-    div []
-        [ navbar model
-        , div [ class "container-fluid" ]
-            [ div [ class "row" ] <| page model
-            ]
-        ]
+    case model.authStatus of
+        Auth.Authorized token ->
+            div []
+                [ navbar model
+                , div [ class "container-fluid" ]
+                    [ div [ class "row" ] <| page model
+                    ]
+                ]
+
+        _ ->
+            div []
+                [ Auth.view AuthFormMsg
+                    AuthFormSubmitted
+                    model.authStatus
+                    model.authForm
+                ]
 
 
 navbar : Model -> Html Msg
@@ -34,6 +45,12 @@ navbar model =
                 ]
                 []
             ]
+        , a
+            [ class "navbar-text float-xs-right"
+            , href "#"
+            , onClick LogoutButtonClicked
+            ]
+            [ text "Logout" ]
         ]
 
 
