@@ -41,6 +41,7 @@ INSTALLED_APPS = (
 
     'corsheaders',
     'rest_framework',
+    'rest_framework.authtoken',
 
     'feeds',
     'users'
@@ -81,6 +82,11 @@ WSGI_APPLICATION = 'rssonate.wsgi.application'
 
 # REST Settings
 REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
+    ),
     'DEFAULT_FILTER_BACKENDS': ('django_filters.rest_framework.DjangoFilterBackend',),
     'DEFAULT_PERMISSION_CLASSES': ('rest_framework.permissions.AllowAny',),
     'PAGE_SIZE': 0,
