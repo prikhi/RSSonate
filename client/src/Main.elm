@@ -82,7 +82,11 @@ update msg model =
             ( model, mapToken model addFeed <| model.addFeedInput )
 
         LogoutButtonClicked ->
-            ( { model | authStatus = Auth.LoggingIn }, removeAuthToken () )
+            let
+                ( initialModel, initialCmd ) =
+                    init { authToken = Nothing }
+            in
+                ( initialModel, Cmd.batch [ removeAuthToken (), initialCmd ] )
 
         SetCurrentFeed id ->
             let
