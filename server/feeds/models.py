@@ -9,6 +9,7 @@ from django.core.files import File
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.forms import ValidationError
 import feedparser
 
 
@@ -30,6 +31,8 @@ class Feed(models.Model):
     def save(self, *args, **kwargs):
         """Fetch & Set the Feed URL's Information."""
         feed = feedparser.parse(self.feed_url).feed
+        if feed == {}:
+            raise ValidationError("Could not parse feed.")
         self.title = feed.get('title', '')
         self.description = feed.get('description', '')
         self.channel_link = feed.get('link', '')
@@ -59,7 +62,7 @@ class Feed(models.Model):
             item_entered = self.items.filter(entry_id=entry['id']).exists()
             if not item_entered:
                 item = FeedItem(feed=self, entry_id=entry['id'])
-                item.title = entry.get('title', 'Feed Has No Title!')
+                item.title = entry.get('title', '(untitled)')
                 item.link = entry.get('link', '')
                 item.description = entry.get('description', '')
                 published = entry.get('published_parsed')
