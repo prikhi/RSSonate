@@ -118,7 +118,13 @@ feedsPanel feeds maybeFeedId =
     let
         feedItem feed =
             li [ class "nav-item", onClick <| SetCurrentFeed feed.id ]
-                [ a [ class <| linkClass feed, href "#" ] [ text feed.title ] ]
+                [ a [ class <| linkClass feed, href "#" ] [ text <| title feed ] ]
+
+        title feed =
+            if feed.title == "" then
+                feed.feedUrl
+            else
+                feed.title
 
         linkClass feed =
             if Just feed.id == maybeFeedId then
@@ -126,8 +132,7 @@ feedsPanel feeds maybeFeedId =
             else
                 "nav-link"
     in
-        ul [ class "nav nav-pills nav-stacked" ] <|
-            List.map feedItem feeds
+        ul [ class "nav nav-pills nav-stacked" ] <| List.map feedItem feeds
 
 
 itemsPanel : Maybe Feed -> Maybe FeedId -> List FeedItem -> Bool -> RemoteStatus.Model -> List (Html Msg)
