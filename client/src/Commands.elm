@@ -8,7 +8,7 @@ import HttpBuilder
 import Json.Decode as Decode
 import Json.Encode as Encode
 import Messages exposing (Msg(..))
-import Model exposing (FeedId, feedDecoder, feedItemDecoder)
+import Model exposing (FeedId, FeedItemId, feedDecoder, feedItemDecoder)
 import Task
 
 
@@ -86,6 +86,15 @@ fetchItemsForFeed token id =
         |> HttpBuilder.withHeader "Authorization" ("Token " ++ token)
         |> HttpBuilder.toRequest (HttpBuilder.jsonReader <| Decode.list feedItemDecoder)
         |> Http.send (Result.map .data >> FeedItemsFetched id)
+
+
+markItemAsRead : Auth.Token -> FeedItemId -> Cmd Msg
+markItemAsRead token id =
+    HttpBuilder.put ("/api/feeditems/" ++ toString id ++ "/read/")
+        |> HttpBuilder.withHeader "Accept" "application/json"
+        |> HttpBuilder.withHeader "Authorization" ("Token " ++ token)
+        |> HttpBuilder.toRequest (HttpBuilder.jsonReader <| Decode.succeed id)
+        |> Http.send (Result.map .data >> FeedItemMarkedRead)
 
 
 newContentCommands : Cmd Msg

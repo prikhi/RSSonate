@@ -173,10 +173,13 @@ feedItemTable : Maybe FeedItemId -> List FeedItem -> Html Msg
 feedItemTable maybeItemId items =
     let
         rowClass item =
-            if Just item.id == maybeItemId then
-                "active clickable"
-            else
-                "clickable"
+            [ ( Just item.id == maybeItemId, "active" )
+            , ( item.isUnread, "font-weight-bold" )
+            , ( True, "clickable" )
+            ]
+                |> List.filter Tuple.first
+                |> List.map Tuple.second
+                |> String.join " "
 
         formatDate =
             Maybe.map (Date.Format.format "%m/%d/%Y") >> Maybe.withDefault ""

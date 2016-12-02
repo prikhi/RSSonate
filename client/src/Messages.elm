@@ -27,3 +27,4 @@ type Msg
     | FeedRefreshed (HttpData (List FeedItem))
     | FeedsFetched (HttpData (List Feed))
     | FeedItemsFetched FeedId (HttpData (List FeedItem))
+    | FeedItemMarkedRead (HttpData FeedItemId)

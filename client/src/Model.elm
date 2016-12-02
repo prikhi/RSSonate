@@ -56,18 +56,20 @@ type alias FeedItem =
     , link : String
     , description : String
     , published : Maybe Date.Date
+    , isUnread : Bool
     }
 
 
 feedItemDecoder : Decode.Decoder FeedItem
 feedItemDecoder =
-    Decode.map6 FeedItem
+    Decode.map7 FeedItem
         (Decode.field "id" Decode.int)
         (Decode.field "feed" Decode.int)
         (Decode.field "title" Decode.string)
         (Decode.field "link" Decode.string)
         (Decode.field "description" Decode.string)
         (Decode.field "published" (Decode.nullable decodeDate))
+        (Decode.field "is_unread" Decode.bool)
 
 
 decodeDate : Decode.Decoder Date.Date

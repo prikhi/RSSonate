@@ -38,7 +38,10 @@ init flags =
       , refreshingFeedsStatus = RemoteStatus.initial
       , fetchedFeeds = Set.empty
       }
-    , Cmd.batch [ triggerResize () ]
+    , Cmd.batch
+        [ triggerResize ()
+        , flags.authToken |> Maybe.map fetchFeeds |> Maybe.withDefault Cmd.none
+        ]
     )
 
 
@@ -94,9 +97,25 @@ update msg model =
                 )
 
         SetCurrentFeedItem id ->
-            ( { model | currentFeedItem = Just id }
-            , Cmd.batch [ triggerResize (), newContentCommands ]
-            )
+            let
+                setAsRead items =
+                    case items of
+                        [] ->
+                            []
+
+                        x :: xs ->
+                            if x.id == id then
+                                { x | isUnread = False } :: xs
+                            else
+                                x :: setAsRead xs
+            in
+                ( { model | currentFeedItem = Just id, feedItems = setAsRead model.feedItems }
+                , Cmd.batch
+                    [ triggerResize ()
+                    , newContentCommands
+                    , mapToken model markItemAsRead <| id
+                    ]
+                )
 
         RefreshFeedsClicked ->
             ( { model
@@ -170,6 +189,12 @@ update msg model =
             )
 
         FeedItemsFetched _ (Err _) ->
+            ( model, Cmd.none )
+
+        FeedItemMarkedRead (Ok id) ->
+            ( model, Cmd.none )
+
+        FeedItemMarkedRead (Err _) ->
             ( model, Cmd.none )
 
 
