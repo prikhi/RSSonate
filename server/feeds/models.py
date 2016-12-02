@@ -4,8 +4,11 @@ import os
 import threading
 import urllib
 
+from django.conf import settings
 from django.core.files import File
 from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 import feedparser
 
 
@@ -67,6 +70,25 @@ class Feed(models.Model):
         return new_items
 
 
+class FeedSubscription(models.Model):
+    """A Subscription to a Feed for a User."""
+
+    feed = models.ForeignKey('Feed', related_name='subscriptions')
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+
+    class Meta(object):
+        unique_together = ('feed', 'user')
+
+
+@receiver(post_save, sender=FeedSubscription)
+def create_user_items(sender, instance=None, created=False, **kwargs):
+    """Create UserItems for the new Subscriber, if they don't exist."""
+    if created:
+        for item in instance.feed.items.all():
+            UserItem.objects.get_or_create(item=item, user=instance.user)
+
+
 class FeedItem(models.Model):
     """A single item fetched from a Feed."""
 
@@ -80,6 +102,27 @@ class FeedItem(models.Model):
 
     class Meta(object):
         ordering = ('-published',)
+
+
+@receiver(post_save, sender=FeedItem)
+def create_user_item(sender, instance=None, created=False, **kwargs):
+    """Create a UserItem for each Subscriber."""
+    if created:
+        subscriptions = FeedSubscription.objects.filter(feed=instance)
+        for subscription in subscriptions:
+            UserItem.objects.create(item=instance, user=subscription.user)
+
+
+class UserItem(models.Model):
+    """A FeedItem linked to a User."""
+
+    item = models.ForeignKey('FeedItem')
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    is_unread = models.BooleanField(default=True)
+
+    class Meta(object):
+        unique_together = ('item', 'user')
 
 
 class UpdateFeedThread(threading.Thread):
