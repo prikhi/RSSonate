@@ -1,11 +1,8 @@
 """Store information for RSS Feeds."""
 import datetime
-import os
 import threading
-import urllib
 
 from django.conf import settings
-from django.core.files import File
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -20,7 +17,6 @@ class Feed(models.Model):
     feed_url = models.URLField(max_length=500, unique=True)
     title = models.CharField(max_length=200, blank=True)
     description = models.CharField(max_length=200, blank=True)
-    image = models.ImageField(upload_to='feed-icons/', null=True, blank=True)
     channel_link = models.URLField(max_length=200, blank=True)
     published = models.DateTimeField(auto_now_add=True)
 
@@ -39,12 +35,6 @@ class Feed(models.Model):
         published = feed.get('published_parsed', feed.get('updated_parsed'))
         if published is not None:
             self.published = datetime.datetime(*published[:-2])
-        #if 'image' in feed and 'href' in feed.image:
-        #    fetched_image = urllib.urlretrieve(feed.image.href)
-        #    self.image.save(
-        #        os.path.basename(feed.image.href),
-        #        File(open(fetched_image[0]))
-        #    )
         self.full_clean()
         self.async_update_items()
         return super(Feed, self).save(*args, **kwargs)
