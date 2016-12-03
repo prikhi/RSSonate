@@ -239,7 +239,14 @@ itemPanel maybeItem feedItems =
         itemFooter =
             maybeItem
                 |> Maybe.map (.id >> itemButtonGroup)
-                |> Maybe.withDefault (text "")
+                |> Maybe.withDefault
+                    [ itemButton "Previous" Nothing
+                    , itemButton "View on Site" Nothing
+                    , itemButton "Next" Nothing
+                    ]
+                |> \group ->
+                    div [ class "card-footer text-xs-center" ]
+                        [ div [ class "btn-group" ] group ]
 
         itemButton content mId =
             case mId of
@@ -252,13 +259,10 @@ itemPanel maybeItem feedItems =
                         [ text content ]
 
         itemButtonGroup itemId =
-            div [ class "card-footer text-xs-center" ]
-                [ div [ class "btn-group" ]
-                    [ previousItem feedItems itemId |> itemButton "Previous"
-                    , itemLink
-                    , nextItem feedItems itemId |> itemButton "Next"
-                    ]
-                ]
+            [ previousItem feedItems itemId |> itemButton "Previous"
+            , itemLink
+            , nextItem feedItems itemId |> itemButton "Next"
+            ]
     in
         [ div [ class "card-header card-primary clearfix" ]
             [ text headerText
