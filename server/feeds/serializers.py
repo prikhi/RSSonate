@@ -12,7 +12,7 @@ class FeedItemSerializer(serializers.ModelSerializer):
 class FeedSerializer(serializers.ModelSerializer):
     class Meta(object):
         model = Feed
-        fields = ('id', 'feed_url', 'title', 'description', 'image',
-                  'channel_link', 'published')
-        read_only_fields = ('title', 'description', 'image', 'channel_link',
+        fields = ('id', 'feed_url', 'title', 'description', 'channel_link',
+                  'published')
+        read_only_fields = ('title', 'description', 'channel_link',
                             'published', 'items')
