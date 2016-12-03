@@ -21,24 +21,43 @@ port removeAuthToken : () -> Cmd msg
 port triggerResize : () -> Cmd msg
 
 
+sendAnonRequest :
+    (Result Http.Error a -> msg)
+    -> Decode.Decoder a
+    -> HttpBuilder.RequestBuilder
+    -> Cmd msg
+sendAnonRequest tagger decoder =
+    HttpBuilder.withHeader "Accept" "application/json"
+        >> HttpBuilder.toRequest (HttpBuilder.jsonReader decoder)
+        >> Http.send (Result.map .data >> tagger)
+
+
+sendAuthRequest :
+    Auth.Token
+    -> (Result Http.Error a -> msg)
+    -> Decode.Decoder a
+    -> HttpBuilder.RequestBuilder
+    -> Cmd msg
+sendAuthRequest token tagger decoder =
+    HttpBuilder.withHeader "Authorization" ("Token " ++ token)
+        >> sendAnonRequest tagger decoder
+
+
 login : Auth.Form -> Cmd Msg
 login form =
     HttpBuilder.post "/api/api-token-auth/"
-        |> HttpBuilder.withHeader "Accept" "application/json"
         |> HttpBuilder.withJsonBody
             (Encode.object
                 [ ( "username", Encode.string form.username )
                 , ( "password", Encode.string form.password )
                 ]
             )
-        |> HttpBuilder.toRequest (HttpBuilder.jsonReader <| Decode.field "token" Decode.string)
-        |> Http.send (Result.map .data >> AuthCompleted)
+        |> sendAnonRequest AuthCompleted (Decode.field "token" Decode.string)
 
 
 register : Auth.Form -> Cmd Msg
 register form =
     HttpBuilder.post "/api/users/"
-        |> HttpBuilder.withHeader "Accept" "application/json"
         |> HttpBuilder.withJsonBody
             (Encode.object
                 [ ( "username", Encode.string form.username )
@@ -46,55 +65,41 @@ register form =
                 , ( "password_again", Encode.string form.passwordAgain )
                 ]
             )
-        |> HttpBuilder.toRequest (HttpBuilder.jsonReader <| Decode.field "token" Decode.string)
-        |> Http.send (Result.map .data >> AuthCompleted)
+        |> sendAnonRequest AuthCompleted (Decode.field "token" Decode.string)
 
 
 addFeed : Auth.Token -> String -> Cmd Msg
 addFeed token feedUrl =
     HttpBuilder.post "/api/feeds/"
-        |> HttpBuilder.withHeader "Accept" "application/json"
-        |> HttpBuilder.withHeader "Authorization" ("Token " ++ token)
         |> HttpBuilder.withJsonBody (Encode.object [ ( "feed_url", Encode.string feedUrl ) ])
-        |> HttpBuilder.toRequest (HttpBuilder.jsonReader feedDecoder)
-        |> Http.send (Result.map .data >> FeedAdded)
+        |> sendAuthRequest token FeedAdded feedDecoder
 
 
 refreshFeed : Auth.Token -> FeedId -> Cmd Msg
 refreshFeed token id =
     HttpBuilder.put ("/api/feeds/" ++ toString id ++ "/refresh/")
-        |> HttpBuilder.withHeader "Accept" "application/json"
-        |> HttpBuilder.withHeader "Authorization" ("Token " ++ token)
-        |> HttpBuilder.toRequest (HttpBuilder.jsonReader <| Decode.field "results" <| Decode.list feedItemDecoder)
-        |> Http.send (Result.map .data >> FeedRefreshed)
+        |> sendAuthRequest token
+            FeedRefreshed
+            (Decode.field "results" <| Decode.list feedItemDecoder)
 
 
 fetchFeeds : Auth.Token -> Cmd Msg
 fetchFeeds token =
     HttpBuilder.get "/api/feeds/"
-        |> HttpBuilder.withHeader "Accept" "application/json"
-        |> HttpBuilder.withHeader "Authorization" ("Token " ++ token)
-        |> HttpBuilder.toRequest (HttpBuilder.jsonReader <| Decode.list feedDecoder)
-        |> Http.send (Result.map .data >> FeedsFetched)
+        |> sendAuthRequest token FeedsFetched (Decode.list feedDecoder)
 
 
 fetchItemsForFeed : Auth.Token -> FeedId -> Cmd Msg
 fetchItemsForFeed token id =
     HttpBuilder.url "/api/feeditems/" [ ( "feed", toString id ) ]
         |> HttpBuilder.get
-        |> HttpBuilder.withHeader "Accept" "application/json"
-        |> HttpBuilder.withHeader "Authorization" ("Token " ++ token)
-        |> HttpBuilder.toRequest (HttpBuilder.jsonReader <| Decode.list feedItemDecoder)
-        |> Http.send (Result.map .data >> FeedItemsFetched id)
+        |> sendAuthRequest token (FeedItemsFetched id) (Decode.list feedItemDecoder)
 
 
 markItemAsRead : Auth.Token -> FeedItemId -> Cmd Msg
 markItemAsRead token id =
     HttpBuilder.put ("/api/feeditems/" ++ toString id ++ "/read/")
-        |> HttpBuilder.withHeader "Accept" "application/json"
-        |> HttpBuilder.withHeader "Authorization" ("Token " ++ token)
-        |> HttpBuilder.toRequest (HttpBuilder.jsonReader <| Decode.succeed id)
-        |> Http.send (Result.map .data >> FeedItemMarkedRead)
+        |> sendAuthRequest token FeedItemMarkedRead (Decode.succeed id)
 
 
 newContentCommands : Cmd Msg
