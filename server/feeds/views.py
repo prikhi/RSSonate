@@ -55,9 +55,7 @@ class FeedItemViewSet(viewsets.GenericViewSet):
         for feed in subscribed_feeds:
             feed_items = FeedItem.objects.filter(feed=feed)
             for item in feed_items:
-                data = {"id": item.id, "feed": feed.id, "title": item.title,
-                        "link": item.link, "description": item.description,
-                        "published": item.published}
+                data = FeedItemSerializer(item).data
                 (user_item, _) = UserItem.objects.get_or_create(
                     item=item, user=request.user)
                 data['is_unread'] = user_item.is_unread
