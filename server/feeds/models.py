@@ -101,7 +101,7 @@ class FeedItem(models.Model):
 def create_user_item(sender, instance=None, created=False, **kwargs):
     """Create a UserItem for each Subscriber."""
     if created:
-        subscriptions = FeedSubscription.objects.filter(feed=instance)
+        subscriptions = FeedSubscription.objects.filter(feed=instance.feed)
         for subscription in subscriptions:
             UserItem.objects.create(item=instance, user=subscription.user)
 
