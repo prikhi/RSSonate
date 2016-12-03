@@ -117,8 +117,21 @@ feedsPanel : List Feed -> Maybe FeedId -> Html Msg
 feedsPanel feeds maybeFeedId =
     let
         feedItem feed =
-            li [ class "nav-item", onClick <| SetCurrentFeed feed.id ]
-                [ a [ class <| linkClass feed, href "#" ] [ text <| title feed ] ]
+            li [ class "nav-item clearfix", onClick <| SetCurrentFeed feed.id ]
+                [ a [ class <| linkClass feed, href "#" ]
+                    [ text <| title feed
+                    , unreadBadge feed
+                    ]
+                ]
+
+        linkClass feed =
+            if isActive feed then
+                "nav-link active"
+            else
+                "nav-link"
+
+        isActive feed =
+            Just feed.id == maybeFeedId
 
         title feed =
             if feed.title == "" then
@@ -126,11 +139,18 @@ feedsPanel feeds maybeFeedId =
             else
                 feed.title
 
-        linkClass feed =
-            if Just feed.id == maybeFeedId then
-                "nav-link active"
+        unreadBadge feed =
+            if feed.unreadCount > 0 then
+                span [ class <| "tag tag-pill float-xs-right " ++ badgeClass feed ]
+                    [ text <| toString feed.unreadCount ]
             else
-                "nav-link"
+                text ""
+
+        badgeClass feed =
+            if isActive feed then
+                "tag-default"
+            else
+                "tag-primary"
     in
         ul [ class "nav nav-pills nav-stacked" ] <| List.map feedItem feeds
 

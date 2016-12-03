@@ -32,17 +32,19 @@ type alias Feed =
     , title : String
     , description : String
     , channelLink : String
+    , unreadCount : Int
     }
 
 
 feedDecoder : Decode.Decoder Feed
 feedDecoder =
-    Decode.map5 Feed
+    Decode.map6 Feed
         (Decode.field "id" Decode.int)
         (Decode.field "feed_url" Decode.string)
         (Decode.field "title" Decode.string)
         (Decode.field "description" Decode.string)
         (Decode.field "channel_link" Decode.string)
+        (Decode.field "unread_count" Decode.int)
 
 
 type alias FeedItemId =
