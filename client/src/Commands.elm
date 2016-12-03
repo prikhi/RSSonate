@@ -102,6 +102,13 @@ markItemAsRead token id =
         |> sendAuthRequest token FeedItemMarkedRead (Decode.succeed id)
 
 
+focusItemsPanel : Cmd Msg
+focusItemsPanel =
+    Dom.focus "items-block"
+        |> Task.andThen (\() -> Scroll.toTop "items-block")
+        |> Task.attempt DomTaskCompleted
+
+
 newContentCommands : Cmd Msg
 newContentCommands =
     Dom.focus "content-block"

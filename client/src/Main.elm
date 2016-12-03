@@ -92,9 +92,9 @@ update msg model =
             let
                 cmd =
                     if Set.member id model.fetchedFeeds then
-                        Cmd.none
+                        focusItemsPanel
                     else
-                        mapToken model fetchItemsForFeed <| id
+                        Cmd.batch [ focusItemsPanel, mapToken model fetchItemsForFeed <| id ]
             in
                 ( { model | currentFeed = Just id, currentFeedItem = Nothing }
                 , cmd

@@ -170,7 +170,7 @@ itemsPanel maybeFeed maybeFeedItemId feedItems isRefreshingFeed refreshingFeedsS
             [ text headerText
             , maybeFeed |> Maybe.map refreshButton |> Maybe.withDefault (text "")
             ]
-        , div [ class "card-block" ] [ content ]
+        , div [ id "items-block", class "card-block" ] [ content ]
         ]
 
 
