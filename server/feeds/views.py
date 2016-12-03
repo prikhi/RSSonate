@@ -26,6 +26,10 @@ class FeedViewSet(viewsets.GenericViewSet):
         subscribed_feeds = self.get_queryset().filter(
             subscriptions__user=request.user)
         data = FeedSerializer(subscribed_feeds, many=True).data
+        for feed in data:
+            feed['unread_count'] = UserItem.objects.filter(
+                user=request.user, item__feed=feed['id'],
+                is_unread=True).count()
         return Response(data)
 
     @detail_route(methods=['put'])
