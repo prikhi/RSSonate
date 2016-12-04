@@ -4,6 +4,7 @@ module Auth
         , Model(..)
         , fromToken
         , toToken
+        , mapToken
         , Form
         , initalForm
         , Msg(..)
@@ -51,6 +52,13 @@ toToken model =
 
         _ ->
             Nothing
+
+
+{-| Apply an Authentication State to a command taking a token.
+-}
+mapToken : { a | authStatus : Model } -> (Token -> b -> Cmd msg) -> b -> Cmd msg
+mapToken { authStatus } func =
+    toToken authStatus |> Maybe.map func |> Maybe.withDefault (always Cmd.none)
 
 
 {-| The Login/Registration Form

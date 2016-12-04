@@ -1,6 +1,6 @@
 port module Main exposing (..)
 
-import Auth
+import Auth exposing (mapToken)
 import Commands exposing (..)
 import Html exposing (Html)
 import Messages exposing (Msg(..))
@@ -43,13 +43,6 @@ init flags =
         , flags.authToken |> Maybe.map fetchFeeds |> Maybe.withDefault Cmd.none
         ]
     )
-
-
-mapToken : Model -> (Auth.Token -> b -> Cmd msg) -> b -> Cmd msg
-mapToken { authStatus } func =
-    Auth.toToken authStatus
-        |> Maybe.map func
-        |> Maybe.withDefault (always Cmd.none)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
