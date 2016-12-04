@@ -111,6 +111,12 @@ markItemAsRead token id =
         |> sendAuthRequest token FeedItemMarkedRead (Decode.succeed id)
 
 
+toggleItemFavorite : Auth.Token -> FeedItemId -> Cmd Msg
+toggleItemFavorite token id =
+    HttpBuilder.put ("/api/feeditems/" ++ toString id ++ "/favorite/")
+        |> sendAuthRequest token FeedItemFavoriteToggled (Decode.succeed ())
+
+
 focusItemsPanel : Cmd Msg
 focusItemsPanel =
     Dom.focus "items-block"

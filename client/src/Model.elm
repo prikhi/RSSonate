@@ -13,13 +13,29 @@ type alias Model =
     , authForm : Auth.Form
     , authStatus : Auth.Model
     , addFeedInput : String
-    , currentFeed : Maybe FeedId
+    , itemsShown : ItemsShown
     , currentFeedItem : Maybe FeedItemId
     , maximizeItemView : Bool
     , isRefreshingFeed : Bool
     , refreshingFeedsStatus : RemoteStatus.Model
     , fetchedFeeds : Set.Set FeedId
     }
+
+
+type ItemsShown
+    = None
+    | FromFeed FeedId
+    | Favorites
+
+
+feedIdOfItems : ItemsShown -> Maybe FeedId
+feedIdOfItems status =
+    case status of
+        FromFeed id ->
+            Just id
+
+        _ ->
+            Nothing
 
 
 type alias FeedId =
@@ -59,12 +75,13 @@ type alias FeedItem =
     , description : String
     , published : Maybe Date.Date
     , isUnread : Bool
+    , isFavorite : Bool
     }
 
 
 feedItemDecoder : Decode.Decoder FeedItem
 feedItemDecoder =
-    Decode.map7 FeedItem
+    Decode.map8 FeedItem
         (Decode.field "id" Decode.int)
         (Decode.field "feed" Decode.int)
         (Decode.field "title" Decode.string)
@@ -72,6 +89,7 @@ feedItemDecoder =
         (Decode.field "description" Decode.string)
         (Decode.field "published" (Decode.nullable decodeDate))
         (Decode.field "is_unread" Decode.bool)
+        (Decode.field "is_favorite" Decode.bool)
 
 
 decodeDate : Decode.Decoder Date.Date

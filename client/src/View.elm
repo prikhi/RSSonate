@@ -64,9 +64,17 @@ page model =
             findBy .id
 
         maybeFeed =
-            model.currentFeed
-                |> Maybe.map (findById model.feeds)
-                |> Maybe.andThen List.head
+            case model.itemsShown of
+                Model.None ->
+                    Err "Select a Feed"
+
+                Model.Favorites ->
+                    Err "Favorites"
+
+                Model.FromFeed id ->
+                    findById model.feeds id
+                        |> List.head
+                        |> Result.fromMaybe "Select a Feed"
 
         maybeFeedItem =
             model.currentFeedItem
@@ -74,13 +82,26 @@ page model =
                 |> Maybe.andThen List.head
 
         feedItems =
-            model.currentFeed
-                |> Maybe.map (findBy .feed model.feedItems)
-                |> Maybe.withDefault []
+            case model.itemsShown of
+                Model.None ->
+                    []
+
+                Model.FromFeed feedId ->
+                    findBy .feed model.feedItems feedId
+
+                Model.Favorites ->
+                    findBy .isFavorite model.feedItems True
+
+        favoritesButton =
+            button
+                [ class "btn btn-sm btn-warning"
+                , onClick FavoritesButtonClicked
+                ]
+                [ icon "star" ]
 
         refreshFeedsButton =
             button
-                [ class "float-xs-right btn btn-sm btn-success"
+                [ class "btn btn-sm btn-success"
                 , onClick RefreshFeedsClicked
                 ]
                 [ refreshIcon <| RemoteStatus.isInProgress model.refreshingFeedsStatus ]
@@ -94,8 +115,11 @@ page model =
         [ div [ class <| "col-sm-3" ++ collapseClass ]
             [ div [ id "feeds-panel", class "card card-inverse" ]
                 [ div [ class "card-header card-primary clearfix" ]
-                    [ text "Feeds", refreshFeedsButton ]
-                , feedsPanel model.feeds model.currentFeed
+                    [ text "Feeds"
+                    , span [ class "float-xs-right" ]
+                        [ favoritesButton, text " ", refreshFeedsButton ]
+                    ]
+                , feedsPanel model.feeds <| Model.feedIdOfItems model.itemsShown
                 ]
             ]
         , div [ class <| "col-sm-9" ++ collapseClass ]
@@ -155,13 +179,19 @@ feedsPanel feeds maybeFeedId =
         ul [ class "nav nav-pills nav-stacked" ] <| List.map feedItem feeds
 
 
-itemsPanel : Maybe Feed -> Maybe FeedId -> List FeedItem -> Bool -> RemoteStatus.Model -> List (Html Msg)
-itemsPanel maybeFeed maybeFeedItemId feedItems isRefreshingFeed refreshingFeedsStatus =
+itemsPanel : Result String Feed -> Maybe FeedId -> List FeedItem -> Bool -> RemoteStatus.Model -> List (Html Msg)
+itemsPanel feedResult maybeFeedItemId feedItems isRefreshingFeed refreshingFeedsStatus =
     let
         headerText =
-            maybeFeed
-                |> Maybe.map .title
-                |> Maybe.withDefault "Select a Feed"
+            feedResult
+                |> Result.map .title
+                |> \result ->
+                    case result of
+                        Err s ->
+                            s
+
+                        Ok s ->
+                            s
 
         refreshButton feed =
             button
@@ -188,7 +218,7 @@ itemsPanel maybeFeed maybeFeedItemId feedItems isRefreshingFeed refreshingFeedsS
     in
         [ div [ class "card-header card-primary clearfix" ]
             [ text headerText
-            , maybeFeed |> Maybe.map refreshButton |> Maybe.withDefault (text "")
+            , feedResult |> Result.map refreshButton |> Result.withDefault (text "")
             ]
         , div [ id "items-block", class "card-block" ] [ content ]
         ]
@@ -211,7 +241,8 @@ feedItemTable maybeItemId items =
 
         itemRow item =
             tr [ class <| rowClass item, onClick <| SetCurrentFeedItem item.id ]
-                [ td [] [ a [ href "#" ] [ text item.title ] ]
+                [ td [ onClick <| ToggleItemIsFavorite item.id ] [ starIcon item ]
+                , td [] [ a [ href "#" ] [ text item.title ] ]
                 , td [] [ text <| formatDate item.published ]
                 ]
     in
@@ -221,7 +252,8 @@ feedItemTable maybeItemId items =
             table [ class "table table-sm table-striped table-hover" ]
                 [ thead []
                     [ tr []
-                        [ th [] [ text "Title" ]
+                        [ th [] [ icon "star" ]
+                        , th [] [ text "Title" ]
                         , th [] [ text "Date" ]
                         ]
                     ]
@@ -246,14 +278,24 @@ itemPanel maybeItem feedItems =
                 |> Maybe.map .title
                 |> Maybe.withDefault "Select an Item"
 
+        favoriteButton =
+            case maybeItem of
+                Nothing ->
+                    text ""
+
+                Just item ->
+                    button
+                        [ class "btn btn-sm btn-warning"
+                        , onClick <| ToggleItemIsFavorite item.id
+                        ]
+                        [ starIcon item ]
+
         maximizeButton =
             if maybeItem == Nothing then
                 text ""
             else
                 button
-                    [ class "btn btn-sm btn-default float-xs-right"
-                    , onClick ToggleItemViewMaximized
-                    ]
+                    [ class "btn btn-sm btn-default", onClick ToggleItemViewMaximized ]
                     [ icon "arrows-alt" ]
 
         itemFooter =
@@ -286,7 +328,11 @@ itemPanel maybeItem feedItems =
     in
         [ div [ class "card-header card-primary clearfix" ]
             [ text headerText
-            , maximizeButton
+            , span [ class "float-xs-right" ]
+                [ favoriteButton
+                , text " "
+                , maximizeButton
+                ]
             ]
         , itemDisplay maybeItem
         , itemFooter
@@ -343,6 +389,14 @@ refreshIcon isRefreshing =
         icon "refresh fa-spin"
     else
         icon "refresh"
+
+
+starIcon : FeedItem -> Html msg
+starIcon item =
+    if item.isFavorite then
+        icon "star"
+    else
+        icon "star-o"
 
 
 icon : String -> Html msg

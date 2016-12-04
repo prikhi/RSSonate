@@ -31,7 +31,7 @@ init flags =
       , authStatus = Auth.fromToken flags.authToken
       , authForm = Auth.initalForm
       , addFeedInput = ""
-      , currentFeed = Nothing
+      , itemsShown = Model.None
       , currentFeedItem = Nothing
       , maximizeItemView = False
       , isRefreshingFeed = False
@@ -82,7 +82,7 @@ update msg model =
                 ( initialModel, Cmd.batch [ removeAuthToken (), initialCmd ] )
 
         SetCurrentFeed id ->
-            ( { model | currentFeed = Just id, currentFeedItem = Nothing }
+            ( { model | itemsShown = Model.FromFeed id, currentFeedItem = Nothing }
             , Cmd.batch [ fetchItemsForFeedOnce model id, focusItemsPanel ]
             )
 
@@ -93,6 +93,12 @@ update msg model =
                 , newContentCommands
                 , mapToken model markItemAsRead <| id
                 ]
+            )
+
+        FavoritesButtonClicked ->
+            ( { model | itemsShown = Model.Favorites, currentFeedItem = Nothing }
+            , Cmd.batch <|
+                List.map (.id >> fetchItemsForFeedOnce model) model.feeds
             )
 
         RefreshFeedsClicked ->
@@ -111,6 +117,23 @@ update msg model =
             ( { model | maximizeItemView = not model.maximizeItemView }
             , triggerResize ()
             )
+
+        ToggleItemIsFavorite id ->
+            let
+                updateItem items =
+                    case items of
+                        [] ->
+                            []
+
+                        x :: xs ->
+                            if x.id == id then
+                                { x | isFavorite = not x.isFavorite } :: xs
+                            else
+                                x :: updateItem xs
+            in
+                ( { model | feedItems = updateItem model.feedItems }
+                , mapToken model toggleItemFavorite <| id
+                )
 
         DomTaskCompleted _ ->
             ( model, Cmd.none )
@@ -173,6 +196,9 @@ update msg model =
             ( model, Cmd.none )
 
         FeedItemMarkedRead (Err _) ->
+            ( model, Cmd.none )
+
+        FeedItemFavoriteToggled _ ->
             ( model, Cmd.none )
 
 
