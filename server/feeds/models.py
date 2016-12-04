@@ -113,6 +113,7 @@ class UserItem(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     is_unread = models.BooleanField(default=True)
+    is_favorite = models.BooleanField(default=False)
 
     class Meta(object):
         unique_together = ('item', 'user')

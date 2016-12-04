@@ -59,6 +59,7 @@ class FeedItemViewSet(viewsets.GenericViewSet):
                 (user_item, _) = UserItem.objects.get_or_create(
                     item=item, user=request.user)
                 data['is_unread'] = user_item.is_unread
+                data['is_favorite'] = user_item.is_favorite
                 items.append(data)
         return Response(items)
 
@@ -67,5 +68,13 @@ class FeedItemViewSet(viewsets.GenericViewSet):
         """Mark the User's FeedItem as Read."""
         user_item = get_object_or_404(UserItem, item_id=pk, user=request.user)
         user_item.is_unread = False
+        user_item.save()
+        return Response("ok")
+
+    @detail_route(methods=['PUT'])
+    def favorite(self, request, pk=None):
+        """Toggle the Favorite status of the User's FeedItem."""
+        user_item = get_object_or_404(UserItem, item_id=pk, user=request.user)
+        user_item.is_favorite = not user_item.is_favorite
         user_item.save()
         return Response("ok")
