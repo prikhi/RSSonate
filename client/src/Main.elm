@@ -82,16 +82,9 @@ update msg model =
                 ( initialModel, Cmd.batch [ removeAuthToken (), initialCmd ] )
 
         SetCurrentFeed id ->
-            let
-                cmd =
-                    if Set.member id model.fetchedFeeds then
-                        focusItemsPanel
-                    else
-                        Cmd.batch [ focusItemsPanel, mapToken model fetchItemsForFeed <| id ]
-            in
-                ( { model | currentFeed = Just id, currentFeedItem = Nothing }
-                , cmd
-                )
+            ( { model | currentFeed = Just id, currentFeedItem = Nothing }
+            , Cmd.batch [ fetchItemsForFeedOnce model id, focusItemsPanel ]
+            )
 
         SetCurrentFeedItem id ->
             ( updateItemRead id { model | currentFeedItem = Just id }

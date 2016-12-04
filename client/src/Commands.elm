@@ -8,7 +8,8 @@ import HttpBuilder
 import Json.Decode as Decode
 import Json.Encode as Encode
 import Messages exposing (Msg(..))
-import Model exposing (FeedId, FeedItemId, feedDecoder, feedItemDecoder)
+import Model exposing (Model, FeedId, FeedItemId, feedDecoder, feedItemDecoder)
+import Set
 import Task
 
 
@@ -87,6 +88,14 @@ fetchFeeds : Auth.Token -> Cmd Msg
 fetchFeeds token =
     HttpBuilder.get "/api/feeds/"
         |> sendAuthRequest token FeedsFetched (Decode.list feedDecoder)
+
+
+fetchItemsForFeedOnce : Model -> FeedId -> Cmd Msg
+fetchItemsForFeedOnce model id =
+    if Set.member id model.fetchedFeeds then
+        Cmd.none
+    else
+        Auth.mapToken model fetchItemsForFeed <| id
 
 
 fetchItemsForFeed : Auth.Token -> FeedId -> Cmd Msg
