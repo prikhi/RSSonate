@@ -121,12 +121,25 @@ update msg model =
             ( model, Cmd.none )
 
         FeedAdded (Ok newFeed) ->
-            ( { model
-                | feeds = newFeed :: model.feeds
-                , addFeedInput = ""
-              }
-            , Cmd.none
-            )
+            let
+                hasId items id =
+                    case items of
+                        [] ->
+                            False
+
+                        x :: xs ->
+                            if x.id == id then
+                                True
+                            else
+                                hasId xs id
+
+                addFeedToModel currentModel =
+                    if hasId currentModel.feeds newFeed.id then
+                        currentModel
+                    else
+                        { currentModel | feeds = newFeed :: currentModel.feeds }
+            in
+                ( addFeedToModel { model | addFeedInput = "" }, Cmd.none )
 
         FeedAdded (Err _) ->
             ( model, Cmd.none )
