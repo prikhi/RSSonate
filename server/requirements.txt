@@ -4,3 +4,4 @@ Pillow==2.8
 django-cors-headers==1.1
 djangorestframework>=3.5,<3.6
 django-filter>=1.0.0,<2.0
+python-dateutil>=2.6.0,<3.0

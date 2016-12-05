@@ -2,6 +2,7 @@
 import datetime
 import threading
 
+from dateutil import parser
 from django.conf import settings
 from django.db import models
 from django.db.models.signals import post_save
@@ -32,9 +33,9 @@ class Feed(models.Model):
         self.title = feed.get('title', '')
         self.description = feed.get('description', '')
         self.channel_link = feed.get('link', '')
-        published = feed.get('published_parsed', feed.get('updated_parsed'))
+        published = feed.get('published', feed.get('updated'))
         if published is not None:
-            self.published = datetime.datetime(*published[:-2])
+            self.published = parser.parse(published)
         self.full_clean()
         self.async_update_items()
         return super(Feed, self).save(*args, **kwargs)
