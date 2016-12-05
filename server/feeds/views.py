@@ -42,6 +42,14 @@ class FeedViewSet(viewsets.GenericViewSet):
         data = FeedItemSerializer(new_items, many=True).data
         return Response({"results": data})
 
+    @detail_route(methods=['PUT'])
+    def read(self, request, pk=None):
+        """Mark all the Feed's UserItems as Read."""
+        UserItem.objects.filter(
+            user=request.user, item__feed__subscriptions__feed=pk
+        ).update(is_unread=False)
+        return Response("ok")
+
 
 class FeedItemViewSet(viewsets.GenericViewSet):
     """API endpoint that allows a User's FeedItem's to be edited & listed."""
