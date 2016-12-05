@@ -46,8 +46,7 @@ class FeedViewSet(viewsets.GenericViewSet):
     def read(self, request, pk=None):
         """Mark all the Feed's UserItems as Read."""
         UserItem.objects.filter(
-            user=request.user, item__feed__subscriptions__feed=pk
-        ).update(is_unread=False)
+            user=request.user, item__feed=pk).update(is_unread=False)
         return Response("ok")
 
 
