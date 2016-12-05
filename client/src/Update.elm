@@ -131,12 +131,16 @@ update msg model =
         FeedAdded (Err _) ->
             ( model, Cmd.none )
 
-        FeedRefreshed (Ok newItems) ->
-            ( markFeedAsRefreshed { model | feedItems = newItems ++ model.feedItems }
+        FeedRefreshed id (Ok newItems) ->
+            ( markFeedAsRefreshed
+                { model
+                    | feedItems = newItems ++ model.feedItems
+                    , feeds = updateUnreadCount model.feeds (List.length newItems) id
+                }
             , Cmd.none
             )
 
-        FeedRefreshed (Err _) ->
+        FeedRefreshed _ (Err _) ->
             ( markFeedAsRefreshed model, Cmd.none )
 
         FeedsFetched (Ok feeds) ->

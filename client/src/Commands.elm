@@ -80,7 +80,7 @@ refreshFeed : Auth.Token -> FeedId -> Cmd Msg
 refreshFeed token id =
     HttpBuilder.put ("/api/feeds/" ++ toString id ++ "/refresh/")
         |> sendAuthRequest token
-            FeedRefreshed
+            (FeedRefreshed id)
             (Decode.field "results" <| Decode.list feedItemDecoder)
 
 

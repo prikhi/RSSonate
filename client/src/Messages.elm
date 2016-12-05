@@ -27,7 +27,7 @@ type Msg
     | DomTaskCompleted (Result Dom.Error ())
     | AuthCompleted (HttpData Auth.Token)
     | FeedAdded (HttpData Feed)
-    | FeedRefreshed (HttpData (List FeedItem))
+    | FeedRefreshed FeedId (HttpData (List FeedItem))
     | FeedsFetched (HttpData (List Feed))
     | FeedItemsFetched FeedId (HttpData (List FeedItem))
     | FeedItemMarkedRead (HttpData FeedItemId)
