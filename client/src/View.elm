@@ -278,6 +278,18 @@ itemPanel maybeItem feedItems =
                 |> Maybe.map .title
                 |> Maybe.withDefault "Select an Item"
 
+        unreadButton =
+            case maybeItem of
+                Nothing ->
+                    text ""
+
+                Just item ->
+                    button
+                        [ class "btn btn-sm btn-default"
+                        , onClick <| MarkUnreadButtonClicked item.id
+                        ]
+                        [ icon "envelope" ]
+
         favoriteButton =
             case maybeItem of
                 Nothing ->
@@ -329,7 +341,9 @@ itemPanel maybeItem feedItems =
         [ div [ class "card-header card-primary clearfix" ]
             [ text headerText
             , span [ class "float-xs-right" ]
-                [ favoriteButton
+                [ unreadButton
+                , text " "
+                , favoriteButton
                 , text " "
                 , maximizeButton
                 ]

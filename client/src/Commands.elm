@@ -111,6 +111,12 @@ markItemAsRead token id =
         |> sendAuthRequest token FeedItemMarkedRead (Decode.succeed id)
 
 
+markItemAsUnread : Auth.Token -> FeedItemId -> Cmd Msg
+markItemAsUnread token id =
+    HttpBuilder.put ("/api/feeditems/" ++ toString id ++ "/unread/")
+        |> sendAuthRequest token FeedItemMarkedUnread (Decode.succeed id)
+
+
 toggleItemFavorite : Auth.Token -> FeedItemId -> Cmd Msg
 toggleItemFavorite token id =
     HttpBuilder.put ("/api/feeditems/" ++ toString id ++ "/favorite/")

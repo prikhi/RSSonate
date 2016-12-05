@@ -4,7 +4,7 @@ import Auth exposing (mapToken)
 import Commands exposing (..)
 import Html exposing (Html)
 import Messages exposing (Msg(..))
-import Model exposing (Model, FeedItemId)
+import Model exposing (Model, Feed, FeedId, FeedItemId)
 import RemoteStatus
 import Set
 import View exposing (view)
@@ -87,7 +87,7 @@ update msg model =
             )
 
         SetCurrentFeedItem id ->
-            ( updateItemRead id { model | currentFeedItem = Just id }
+            ( setItemRead id { model | currentFeedItem = Just id }
             , Cmd.batch
                 [ triggerResize ()
                 , newContentCommands
@@ -134,6 +134,11 @@ update msg model =
                 ( { model | feedItems = updateItem model.feedItems }
                 , mapToken model toggleItemFavorite <| id
                 )
+
+        MarkUnreadButtonClicked id ->
+            ( setItemUnread id { model | currentFeedItem = Nothing }
+            , mapToken model markItemAsUnread <| id
+            )
 
         DomTaskCompleted _ ->
             ( model, Cmd.none )
@@ -192,51 +197,75 @@ update msg model =
         FeedItemsFetched _ (Err _) ->
             ( model, Cmd.none )
 
-        FeedItemMarkedRead (Ok id) ->
+        FeedItemMarkedUnread _ ->
             ( model, Cmd.none )
 
-        FeedItemMarkedRead (Err _) ->
+        FeedItemMarkedRead _ ->
             ( model, Cmd.none )
 
         FeedItemFavoriteToggled _ ->
             ( model, Cmd.none )
 
 
-updateItemRead : FeedItemId -> Model -> Model
-updateItemRead itemId model =
+setItemRead : FeedItemId -> Model -> Model
+setItemRead =
+    updateItemIsUnread False
+
+
+setItemUnread : FeedItemId -> Model -> Model
+setItemUnread =
+    updateItemIsUnread True
+
+
+updateItemIsUnread : Bool -> FeedItemId -> Model -> Model
+updateItemIsUnread newUnreadStatus id model =
     let
-        getAndUpdate f id items =
-            case items of
-                [] ->
-                    ( Nothing, [] )
-
-                x :: xs ->
-                    if x.id == id then
-                        ( Just <| f x, f x :: xs )
-                    else
-                        getAndUpdate f id xs
-                            |> \( updated, updatedItems ) -> ( updated, x :: updatedItems )
-
         ( maybeItem, updatedItems ) =
-            getAndUpdate (\x -> { x | isUnread = False }) itemId model.feedItems
+            getAndUpdate (\x -> { x | isUnread = newUnreadStatus }) id model.feedItems
+
+        unreadChange =
+            if newUnreadStatus then
+                1
+            else
+                -1
 
         updatedFeeds =
             maybeItem
-                |> Maybe.map (.feed >> updateUnreadCount model.feeds)
+                |> Maybe.map (.feed >> updateUnreadCount model.feeds unreadChange)
                 |> Maybe.withDefault model.feeds
-
-        updateUnreadCount items id =
-            case items of
-                [] ->
-                    []
-
-                x :: xs ->
-                    if x.id == id then
-                        { x | unreadCount = x.unreadCount - 1 } :: xs
-                    else
-                        x :: updateUnreadCount xs id
     in
         { model | feedItems = updatedItems, feeds = updatedFeeds }
+
+
+updateUnreadCount : List Feed -> Int -> FeedId -> List Feed
+updateUnreadCount feeds amount id =
+    case feeds of
+        [] ->
+            []
+
+        x :: xs ->
+            if x.id == id then
+                { x | unreadCount = x.unreadCount + amount } :: xs
+            else
+                x :: updateUnreadCount xs amount id
+
+
+getAndUpdate :
+    ({ a | id : b } -> { a | id : b })
+    -> b
+    -> List { a | id : b }
+    -> ( Maybe { a | id : b }, List { a | id : b } )
+getAndUpdate f id items =
+    case items of
+        [] ->
+            ( Nothing, [] )
+
+        x :: xs ->
+            if x.id == id && f x /= x then
+                ( Just <| f x, f x :: xs )
+            else
+                getAndUpdate f id xs
+                    |> \( updated, updatedItems ) -> ( updated, x :: updatedItems )
 
 
 markFeedAsRefreshed : Model -> Model

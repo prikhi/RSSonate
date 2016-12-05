@@ -23,6 +23,7 @@ type Msg
     | RefreshFeedClicked FeedId
     | ToggleItemViewMaximized
     | ToggleItemIsFavorite FeedItemId
+    | MarkUnreadButtonClicked FeedItemId
     | DomTaskCompleted (Result Dom.Error ())
     | AuthCompleted (HttpData Auth.Token)
     | FeedAdded (HttpData Feed)
@@ -30,4 +31,5 @@ type Msg
     | FeedsFetched (HttpData (List Feed))
     | FeedItemsFetched FeedId (HttpData (List FeedItem))
     | FeedItemMarkedRead (HttpData FeedItemId)
+    | FeedItemMarkedUnread (HttpData FeedItemId)
     | FeedItemFavoriteToggled (HttpData ())
