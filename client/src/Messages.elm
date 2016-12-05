@@ -30,7 +30,7 @@ type Msg
     | FeedAdded (HttpData Feed)
     | FeedRefreshed FeedId (HttpData (List FeedItem))
     | FeedsFetched (HttpData (List Feed))
-    | FeedMarkedRead (HttpData FeedItemId)
+    | FeedMarkedRead (HttpData FeedId)
     | FeedItemsFetched FeedId (HttpData (List FeedItem))
     | FeedItemMarkedRead (HttpData FeedItemId)
     | FeedItemMarkedUnread (HttpData FeedItemId)
