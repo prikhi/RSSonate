@@ -19,6 +19,8 @@ class FeedViewSet(viewsets.GenericViewSet):
         (_, _) = FeedSubscription.objects.get_or_create(
             feed=feed, user=request.user)
         data = FeedSerializer(feed).data
+        data['unread_count'] = UserItem.objects.filter(
+            user=request.user, item__feed=feed.id, is_unread=True).count()
         return Response(data)
 
     def list(self, request):
@@ -78,7 +80,6 @@ class FeedItemViewSet(viewsets.GenericViewSet):
         user_item.is_unread = True
         user_item.save()
         return Response("ok")
-
 
     @detail_route(methods=['PUT'])
     def favorite(self, request, pk=None):
