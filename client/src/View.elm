@@ -193,9 +193,23 @@ itemsPanel feedResult maybeFeedItemId feedItems isRefreshingFeed refreshingFeeds
                         Ok s ->
                             s
 
+        buttons feed =
+            span [ class "float-xs-right" ]
+                [ markReadButton feed
+                , text " "
+                , refreshButton feed
+                ]
+
+        markReadButton feed =
+            button
+                [ class "btn btn-sm btn-default"
+                , onClick <| MarkFeedReadClicked feed.id
+                ]
+                [ icon "envelope-open" ]
+
         refreshButton feed =
             button
-                [ class "float-xs-right btn btn-sm btn-success"
+                [ class "btn btn-sm btn-success"
                 , onClick <| RefreshFeedClicked feed.id
                 ]
                 [ refreshIcon isRefreshingFeed ]
@@ -218,7 +232,7 @@ itemsPanel feedResult maybeFeedItemId feedItems isRefreshingFeed refreshingFeeds
     in
         [ div [ class "card-header card-primary clearfix" ]
             [ text headerText
-            , feedResult |> Result.map refreshButton |> Result.withDefault (text "")
+            , feedResult |> Result.map buttons |> Result.withDefault (text "")
             ]
         , div [ id "items-block", class "card-block" ] [ content ]
         ]

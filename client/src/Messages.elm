@@ -21,6 +21,7 @@ type Msg
     | FavoritesButtonClicked
     | RefreshFeedsClicked
     | RefreshFeedClicked FeedId
+    | MarkFeedReadClicked FeedId
     | ToggleItemViewMaximized
     | ToggleItemIsFavorite FeedItemId
     | MarkUnreadButtonClicked FeedItemId
@@ -29,6 +30,7 @@ type Msg
     | FeedAdded (HttpData Feed)
     | FeedRefreshed FeedId (HttpData (List FeedItem))
     | FeedsFetched (HttpData (List Feed))
+    | FeedMarkedRead (HttpData FeedItemId)
     | FeedItemsFetched FeedId (HttpData (List FeedItem))
     | FeedItemMarkedRead (HttpData FeedItemId)
     | FeedItemMarkedUnread (HttpData FeedItemId)

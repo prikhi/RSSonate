@@ -105,6 +105,12 @@ fetchItemsForFeed token id =
         |> sendAuthRequest token (FeedItemsFetched id) (Decode.list feedItemDecoder)
 
 
+markFeedAsRead : Auth.Token -> FeedId -> Cmd Msg
+markFeedAsRead token id =
+    HttpBuilder.put ("/api/feeds/" ++ toString id ++ "/read/")
+        |> sendAuthRequest token FeedMarkedRead (Decode.succeed id)
+
+
 markItemAsRead : Auth.Token -> FeedItemId -> Cmd Msg
 markItemAsRead token id =
     HttpBuilder.put ("/api/feeditems/" ++ toString id ++ "/read/")

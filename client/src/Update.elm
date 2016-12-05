@@ -72,6 +72,37 @@ update msg model =
         RefreshFeedClicked id ->
             ( { model | isRefreshingFeed = True }, mapToken model refreshFeed <| id )
 
+        MarkFeedReadClicked id ->
+            let
+                setZeroUnreadCount feeds =
+                    case feeds of
+                        [] ->
+                            []
+
+                        x :: xs ->
+                            if x.id == id then
+                                { x | unreadCount = 0 } :: xs
+                            else
+                                x :: setZeroUnreadCount xs
+
+                setItemsAsRead items =
+                    case items of
+                        [] ->
+                            []
+
+                        x :: xs ->
+                            if x.feed == id && x.isUnread then
+                                { x | isUnread = False } :: setItemsAsRead xs
+                            else
+                                x :: setItemsAsRead xs
+            in
+                ( { model
+                    | feeds = setZeroUnreadCount model.feeds
+                    , feedItems = setItemsAsRead model.feedItems
+                  }
+                , mapToken model markFeedAsRead <| id
+                )
+
         ToggleItemViewMaximized ->
             ( { model | maximizeItemView = not model.maximizeItemView }
             , triggerResize ()
@@ -160,6 +191,9 @@ update msg model =
             ( { model | feeds = feeds }, Cmd.none )
 
         FeedsFetched (Err _) ->
+            ( model, Cmd.none )
+
+        FeedMarkedRead _ ->
             ( model, Cmd.none )
 
         FeedItemsFetched id (Ok items) ->
