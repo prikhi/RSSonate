@@ -29,7 +29,7 @@ initialModel maybeToken =
     , authStatus = Auth.fromToken maybeToken
     , authForm = Auth.initalForm
     , addFeedInput = ""
-    , itemsShown = None
+    , itemsShown = NoItems
     , currentFeedItem = Nothing
     , maximizeItemView = False
     , isRefreshingFeed = False
@@ -39,7 +39,7 @@ initialModel maybeToken =
 
 
 type ItemsShown
-    = None
+    = NoItems
     | FromFeed FeedId
     | Favorites
 

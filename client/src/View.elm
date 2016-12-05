@@ -65,7 +65,7 @@ page model =
 
         maybeFeed =
             case model.itemsShown of
-                Model.None ->
+                Model.NoItems ->
                     Err "Select a Feed"
 
                 Model.Favorites ->
@@ -83,7 +83,7 @@ page model =
 
         feedItems =
             case model.itemsShown of
-                Model.None ->
+                Model.NoItems ->
                     []
 
                 Model.FromFeed feedId ->
