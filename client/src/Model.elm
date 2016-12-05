@@ -22,6 +22,22 @@ type alias Model =
     }
 
 
+initialModel : Maybe Auth.Token -> Model
+initialModel maybeToken =
+    { feeds = []
+    , feedItems = []
+    , authStatus = Auth.fromToken maybeToken
+    , authForm = Auth.initalForm
+    , addFeedInput = ""
+    , itemsShown = None
+    , currentFeedItem = Nothing
+    , maximizeItemView = False
+    , isRefreshingFeed = False
+    , refreshingFeedsStatus = RemoteStatus.initial
+    , fetchedFeeds = Set.empty
+    }
+
+
 type ItemsShown
     = None
     | FromFeed FeedId
