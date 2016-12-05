@@ -72,6 +72,15 @@ class FeedItemViewSet(viewsets.GenericViewSet):
         return Response("ok")
 
     @detail_route(methods=['PUT'])
+    def unread(self, request, pk=None):
+        """Mark the User's FeedItem as Unread."""
+        user_item = get_object_or_404(UserItem, item_id=pk, user=request.user)
+        user_item.is_unread = True
+        user_item.save()
+        return Response("ok")
+
+
+    @detail_route(methods=['PUT'])
     def favorite(self, request, pk=None):
         """Toggle the Favorite status of the User's FeedItem."""
         user_item = get_object_or_404(UserItem, item_id=pk, user=request.user)
