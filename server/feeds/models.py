@@ -1,6 +1,8 @@
 """Store information for RSS Feeds."""
+from HTMLParser import HTMLParser
 import threading
 
+import bleach
 from dateutil import parser
 from django.conf import settings
 from django.db import models
@@ -29,10 +31,11 @@ class Feed(models.Model):
         feed = feedparser.parse(self.feed_url).feed
         if feed == {}:
             raise ValidationError("Could not parse feed.")
-        self.title = feed.get('title', '')
-        self.description = feed.get('description', '')
-        self.channel_link = feed.get('link', '')
-        published = feed.get('published', feed.get('updated'))
+        html = HTMLParser()
+        self.title = html.unescape(feed.get('title', ''))
+        self.description = bleach.clean(feed.get('description', ''))
+        self.channel_link = strip_html(feed.get('link', ''))
+        published = strip_html(feed.get('published', feed.get('updated')))
         if published is not None:
             self.published = parser.parse(published)
         self.full_clean()
@@ -46,21 +49,27 @@ class Feed(models.Model):
     def update_items(self):
         """Retrieve and create new items."""
         entries = feedparser.parse(self.feed_url).entries
+        html = HTMLParser()
 
         new_items = []
         for entry in entries:
             item_entered = self.items.filter(entry_id=entry['id']).exists()
             if not item_entered:
                 item = FeedItem(feed=self, entry_id=entry['id'])
-                item.title = entry.get('title', '(untitled)')
-                item.link = entry.get('link', '')
+                item.title = html.unescape(entry.get('title', '(untitled)'))
+                item.link = strip_html(entry.get('link', ''))
                 item.description = entry.get('description', '')
-                published = entry.get('published', None)
+                published = strip_html(entry.get('published', None))
                 if published is not None:
                     self.published = parser.parse(published)
                 item.save()
                 new_items.append(item)
         return new_items
+
+
+def strip_html(html):
+    """Strip all HTML tags from the given string."""
+    bleach.clean(html, tags=[], strip=True)
 
 
 class FeedSubscription(models.Model):
