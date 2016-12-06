@@ -255,7 +255,7 @@ feedItemTable maybeItemId items =
 
         itemRow item =
             tr [ class <| rowClass item, onClick <| SetCurrentFeedItem item.id ]
-                [ td [ onClick <| ToggleItemIsFavorite item.id ] [ starIcon item ]
+                [ td [ onClick <| ToggleItemIsFavorite item.id ] [ starIcon item.isFavorite ]
                 , td [] [ a [ href "#" ] [ text item.title ] ]
                 , td [] [ text <| formatDate item.published ]
                 ]
@@ -314,7 +314,7 @@ itemPanel maybeItem feedItems =
                         [ class "btn btn-sm btn-warning"
                         , onClick <| ToggleItemIsFavorite item.id
                         ]
-                        [ starIcon item ]
+                        [ starIcon <| not item.isFavorite ]
 
         maximizeButton =
             if maybeItem == Nothing then
@@ -419,9 +419,9 @@ refreshIcon isRefreshing =
         icon "refresh"
 
 
-starIcon : FeedItem -> Html msg
-starIcon item =
-    if item.isFavorite then
+starIcon : Bool -> Html msg
+starIcon full =
+    if full then
         icon "star"
     else
         icon "star-o"
