@@ -5,6 +5,7 @@ import Date
 import Json.Decode as Decode
 import RemoteStatus
 import Set
+import Utils
 
 
 type alias Model =
@@ -103,20 +104,6 @@ feedItemDecoder =
         (Decode.field "title" Decode.string)
         (Decode.field "link" Decode.string)
         (Decode.field "description" Decode.string)
-        (Decode.field "published" (Decode.nullable decodeDate))
+        (Decode.field "published" (Decode.nullable Utils.decodeDate))
         (Decode.field "is_unread" Decode.bool)
         (Decode.field "is_favorite" Decode.bool)
-
-
-decodeDate : Decode.Decoder Date.Date
-decodeDate =
-    let
-        resultToDecoder result =
-            case result of
-                Ok v ->
-                    Decode.succeed v
-
-                Err e ->
-                    Decode.fail e
-    in
-        Decode.string |> Decode.andThen (Date.fromString >> resultToDecoder)

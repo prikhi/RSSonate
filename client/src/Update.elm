@@ -6,6 +6,7 @@ import Messages exposing (Msg(..))
 import Model exposing (Model, Feed, FeedId, FeedItemId, initialModel)
 import RemoteStatus
 import Set
+import Utils
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -78,27 +79,13 @@ update msg model =
 
         MarkFeedReadClicked id ->
             let
-                setZeroUnreadCount feeds =
-                    case feeds of
-                        [] ->
-                            []
+                setZeroUnreadCount =
+                    Utils.updateOneWhere (\x -> x.id == id)
+                        (\x -> { x | unreadCount = 0 })
 
-                        x :: xs ->
-                            if x.id == id then
-                                { x | unreadCount = 0 } :: xs
-                            else
-                                x :: setZeroUnreadCount xs
-
-                setItemsAsRead items =
-                    case items of
-                        [] ->
-                            []
-
-                        x :: xs ->
-                            if x.feed == id && x.isUnread then
-                                { x | isUnread = False } :: setItemsAsRead xs
-                            else
-                                x :: setItemsAsRead xs
+                setItemsAsRead =
+                    Utils.updateAllWhere (\x -> x.feed == id && x.isUnread)
+                        (\x -> { x | isUnread = False })
             in
                 ( { model
                     | feeds = setZeroUnreadCount model.feeds
@@ -114,16 +101,9 @@ update msg model =
 
         ToggleItemIsFavorite id ->
             let
-                updateItem items =
-                    case items of
-                        [] ->
-                            []
-
-                        x :: xs ->
-                            if x.id == id then
-                                { x | isFavorite = not x.isFavorite } :: xs
-                            else
-                                x :: updateItem xs
+                updateItem =
+                    Utils.updateOneWhere (\x -> x.id == id)
+                        (\x -> { x | isFavorite = not x.isFavorite })
             in
                 ( { model | feedItems = updateItem model.feedItems }
                 , mapToken model toggleItemFavorite <| id
@@ -157,19 +137,8 @@ update msg model =
 
         FeedAdded (Ok newFeed) ->
             let
-                hasId items id =
-                    case items of
-                        [] ->
-                            False
-
-                        x :: xs ->
-                            if x.id == id then
-                                True
-                            else
-                                hasId xs id
-
                 addFeedToModel currentModel =
-                    if hasId currentModel.feeds newFeed.id then
+                    if List.any (\x -> x.id == newFeed.id) currentModel.feeds then
                         currentModel
                     else
                         { currentModel | feeds = newFeed :: currentModel.feeds }
@@ -245,7 +214,9 @@ updateItemIsUnread : Bool -> FeedItemId -> Model -> ( Bool, Model )
 updateItemIsUnread newUnreadStatus id model =
     let
         ( maybeItem, updatedItems ) =
-            getAndUpdate (\x -> { x | isUnread = newUnreadStatus }) id model.feedItems
+            Utils.getAndUpdateById (\x -> { x | isUnread = newUnreadStatus })
+                id
+                model.feedItems
 
         unreadChange =
             if newUnreadStatus then
@@ -274,24 +245,6 @@ updateUnreadCount feeds amount id =
                 { x | unreadCount = x.unreadCount + amount } :: xs
             else
                 x :: updateUnreadCount xs amount id
-
-
-getAndUpdate :
-    ({ a | id : b } -> { a | id : b })
-    -> b
-    -> List { a | id : b }
-    -> ( Maybe { a | id : b }, List { a | id : b } )
-getAndUpdate f id items =
-    case items of
-        [] ->
-            ( Nothing, [] )
-
-        x :: xs ->
-            if x.id == id && f x /= x then
-                ( Just <| f x, f x :: xs )
-            else
-                getAndUpdate f id xs
-                    |> \( updated, updatedItems ) -> ( updated, x :: updatedItems )
 
 
 markFeedAsRefreshed : Model -> Model

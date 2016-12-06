@@ -9,6 +9,7 @@ import Markdown
 import Messages exposing (Msg(..))
 import Model exposing (Model, FeedId, Feed, FeedItemId, FeedItem)
 import RemoteStatus
+import Utils exposing (icon)
 
 
 view : Model -> Html Msg
@@ -57,11 +58,8 @@ navbar model =
 page : Model -> List (Html Msg)
 page model =
     let
-        findBy selector items val =
-            List.filter (\i -> selector i == val) items
-
         findById =
-            findBy .id
+            Utils.findBy .id
 
         maybeFeed =
             case model.itemsShown of
@@ -73,13 +71,11 @@ page model =
 
                 Model.FromFeed id ->
                     findById model.feeds id
-                        |> List.head
                         |> Result.fromMaybe "Select a Feed"
 
         maybeFeedItem =
             model.currentFeedItem
-                |> Maybe.map (findById model.feedItems)
-                |> Maybe.andThen List.head
+                |> Maybe.andThen (findById model.feedItems)
 
         feedItems =
             case model.itemsShown of
@@ -87,10 +83,10 @@ page model =
                     []
 
                 Model.FromFeed feedId ->
-                    findBy .feed model.feedItems feedId
+                    Utils.filterEquals .feed model.feedItems feedId
 
                 Model.Favorites ->
-                    findBy .isFavorite model.feedItems True
+                    Utils.filterEquals .isFavorite model.feedItems True
 
         favoritesButton =
             button
@@ -185,13 +181,7 @@ itemsPanel feedResult maybeFeedItemId feedItems isRefreshingFeed refreshingFeeds
         headerText =
             feedResult
                 |> Result.map .title
-                |> \result ->
-                    case result of
-                        Err s ->
-                            s
-
-                        Ok s ->
-                            s
+                |> Utils.mergeResult
 
         buttons feed =
             span [ class "float-xs-right" ]
@@ -279,11 +269,8 @@ itemPanel : Maybe FeedItem -> List FeedItem -> List (Html Msg)
 itemPanel maybeItem feedItems =
     let
         itemLink =
-            case maybeItem of
-                Nothing ->
-                    text ""
-
-                Just item ->
+            Utils.maybeToHtml maybeItem <|
+                \item ->
                     a [ class "btn btn-primary", href item.link, target "_blank" ]
                         [ text "View on Site" ]
 
@@ -293,11 +280,8 @@ itemPanel maybeItem feedItems =
                 |> Maybe.withDefault "Select an Item"
 
         unreadButton =
-            case maybeItem of
-                Nothing ->
-                    text ""
-
-                Just item ->
+            Utils.maybeToHtml maybeItem <|
+                \item ->
                     button
                         [ class "btn btn-sm btn-default"
                         , onClick <| MarkUnreadButtonClicked item.id
@@ -305,11 +289,8 @@ itemPanel maybeItem feedItems =
                         [ icon "envelope" ]
 
         favoriteButton =
-            case maybeItem of
-                Nothing ->
-                    text ""
-
-                Just item ->
+            Utils.maybeToHtml maybeItem <|
+                \item ->
                     button
                         [ class "btn btn-sm btn-warning"
                         , onClick <| ToggleItemIsFavorite item.id
@@ -317,9 +298,9 @@ itemPanel maybeItem feedItems =
                         [ starIcon <| not item.isFavorite ]
 
         maximizeButton =
-            if maybeItem == Nothing then
-                text ""
-            else
+            Utils.maybeToHtml maybeItem
+                << always
+            <|
                 button
                     [ class "btn btn-sm btn-default", onClick ToggleItemViewMaximized ]
                     [ icon "arrows-alt" ]
@@ -347,9 +328,9 @@ itemPanel maybeItem feedItems =
                         [ text content ]
 
         itemButtonGroup itemId =
-            [ previousItem feedItems itemId |> itemButton "Previous"
+            [ Utils.previousItem feedItems itemId |> itemButton "Previous"
             , itemLink
-            , nextItem feedItems itemId |> itemButton "Next"
+            , Utils.nextItem feedItems itemId |> itemButton "Next"
             ]
     in
         [ div [ class "card-header card-primary clearfix" ]
@@ -379,44 +360,12 @@ itemDisplay maybeItem =
             [ content ]
 
 
-previousItem : List { a | id : b } -> b -> Maybe b
-previousItem list currentId =
-    case list of
-        [] ->
-            Nothing
-
-        x :: [] ->
-            Nothing
-
-        x :: y :: ys ->
-            if y.id == currentId then
-                Just x.id
-            else
-                previousItem (y :: ys) currentId
-
-
-nextItem : List { a | id : b } -> b -> Maybe b
-nextItem list currentId =
-    case list of
-        [] ->
-            Nothing
-
-        x :: [] ->
-            Nothing
-
-        x :: y :: ys ->
-            if x.id == currentId then
-                Just y.id
-            else
-                nextItem (y :: ys) currentId
-
-
 refreshIcon : Bool -> Html msg
 refreshIcon isRefreshing =
     if isRefreshing then
-        icon "refresh fa-spin"
+        Utils.icon "refresh fa-spin"
     else
-        icon "refresh"
+        Utils.icon "refresh"
 
 
 starIcon : Bool -> Html msg
@@ -425,11 +374,6 @@ starIcon full =
         icon "star"
     else
         icon "star-o"
-
-
-icon : String -> Html msg
-icon name =
-    node "i" [ class <| "fa fa-" ++ name ] []
 
 
 safeHtmlString : String -> Html msg
