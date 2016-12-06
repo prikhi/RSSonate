@@ -46,13 +46,17 @@ update msg model =
             )
 
         SetCurrentFeedItem id ->
-            ( setItemRead id { model | currentFeedItem = Just id }
-            , Cmd.batch
-                [ triggerResize ()
-                , newContentCommands
-                , mapToken model markItemAsRead <| id
-                ]
-            )
+            let
+                ( updatedModel, cmd ) =
+                    setItemRead id { model | currentFeedItem = Just id }
+            in
+                ( updatedModel
+                , Cmd.batch
+                    [ triggerResize ()
+                    , newContentCommands
+                    , cmd
+                    ]
+                )
 
         FavoritesButtonClicked ->
             ( { model | itemsShown = Model.Favorites, currentFeedItem = Nothing }
@@ -217,17 +221,27 @@ update msg model =
             ( model, Cmd.none )
 
 
-setItemRead : FeedItemId -> Model -> Model
-setItemRead =
-    updateItemIsUnread False
+setItemRead : FeedItemId -> Model -> ( Model, Cmd Msg )
+setItemRead id model =
+    let
+        ( isUpdated, updatedModel ) =
+            updateItemIsUnread False id model
+
+        cmd =
+            if isUpdated then
+                mapToken model markItemAsRead <| id
+            else
+                Cmd.none
+    in
+        ( updatedModel, cmd )
 
 
 setItemUnread : FeedItemId -> Model -> Model
-setItemUnread =
-    updateItemIsUnread True
+setItemUnread id model =
+    updateItemIsUnread True id model |> Tuple.second
 
 
-updateItemIsUnread : Bool -> FeedItemId -> Model -> Model
+updateItemIsUnread : Bool -> FeedItemId -> Model -> ( Bool, Model )
 updateItemIsUnread newUnreadStatus id model =
     let
         ( maybeItem, updatedItems ) =
@@ -244,7 +258,9 @@ updateItemIsUnread newUnreadStatus id model =
                 |> Maybe.map (.feed >> updateUnreadCount model.feeds unreadChange)
                 |> Maybe.withDefault model.feeds
     in
-        { model | feedItems = updatedItems, feeds = updatedFeeds }
+        ( maybeItem /= Nothing
+        , { model | feedItems = updatedItems, feeds = updatedFeeds }
+        )
 
 
 updateUnreadCount : List Feed -> Int -> FeedId -> List Feed
