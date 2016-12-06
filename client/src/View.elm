@@ -249,7 +249,8 @@ feedItemTable maybeItemId items =
 
         itemRow item =
             tr [ class <| rowClass item, onClick <| SetCurrentFeedItem item.id ]
-                [ td [ onClick <| ToggleItemIsFavorite item.id ] [ starIcon item.isFavorite ]
+                [ td [ onClick <| ToggleItemIsFavorite item.id, class "text-xs-center" ]
+                    [ starIcon item.isFavorite ]
                 , td [] [ a [ href "#" ] [ text item.title ] ]
                 , td [] [ text <| formatDate item.published ]
                 ]
@@ -260,7 +261,7 @@ feedItemTable maybeItemId items =
             table [ class "table table-sm table-striped table-hover" ]
                 [ thead []
                     [ tr []
-                        [ th [] [ icon "star" ]
+                        [ th [ class "text-xs-center" ] [ icon "star" ]
                         , th [] [ text "Title" ]
                         , th [] [ text "Date" ]
                         ]
