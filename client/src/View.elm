@@ -3,7 +3,7 @@ module View exposing (view)
 import Auth
 import Date.Format
 import Html exposing (..)
-import Html.Attributes exposing (type_, value, placeholder, class, href, id, target, disabled, attribute, checked)
+import Html.Attributes exposing (type_, value, placeholder, class, href, id, target, disabled, attribute, checked, title)
 import Html.Events exposing (onSubmit, onInput, onClick)
 import Markdown
 import Messages exposing (Msg(..))
@@ -92,6 +92,7 @@ page model =
             button
                 [ class "btn btn-sm btn-warning"
                 , onClick FavoritesButtonClicked
+                , title "List Favorites"
                 ]
                 [ icon "star" ]
 
@@ -99,6 +100,7 @@ page model =
             button
                 [ class "btn btn-sm btn-success"
                 , onClick RefreshFeedsClicked
+                , title "Refresh All Feeds"
                 ]
                 [ refreshIcon <| RemoteStatus.isInProgress model.refreshingFeedsStatus ]
 
@@ -194,6 +196,7 @@ itemsPanel feedResult maybeFeedItemId feedItems isRefreshingFeed refreshingFeeds
             button
                 [ class "btn btn-sm btn-default"
                 , onClick <| MarkFeedReadClicked feed.id
+                , title "Mark All as Read"
                 ]
                 [ icon "envelope-open" ]
 
@@ -201,6 +204,7 @@ itemsPanel feedResult maybeFeedItemId feedItems isRefreshingFeed refreshingFeeds
             button
                 [ class "btn btn-sm btn-success"
                 , onClick <| RefreshFeedClicked feed.id
+                , title "Refresh Feed"
                 ]
                 [ refreshIcon isRefreshingFeed ]
 
@@ -285,6 +289,7 @@ itemPanel maybeItem feedItems =
                     button
                         [ class "btn btn-sm btn-default"
                         , onClick <| MarkUnreadButtonClicked item.id
+                        , title "Mark Unread"
                         ]
                         [ icon "envelope" ]
 
@@ -294,6 +299,11 @@ itemPanel maybeItem feedItems =
                     button
                         [ class "btn btn-sm btn-warning"
                         , onClick <| ToggleItemIsFavorite item.id
+                        , title <|
+                            if item.isFavorite then
+                                "Un-favorite Item"
+                            else
+                                "Favorite Item"
                         ]
                         [ starIcon <| not item.isFavorite ]
 
@@ -302,7 +312,10 @@ itemPanel maybeItem feedItems =
                 << always
             <|
                 button
-                    [ class "btn btn-sm btn-default", onClick ToggleItemViewMaximized ]
+                    [ class "btn btn-sm btn-default"
+                    , onClick ToggleItemViewMaximized
+                    , title "Maximize"
+                    ]
                     [ icon "arrows-alt" ]
 
         itemFooter =
