@@ -110,7 +110,8 @@ update msg model =
                 )
 
         MarkUnreadButtonClicked id ->
-            ( setItemUnread id { model | currentFeedItem = Nothing }
+            ( setItemUnread id
+                { model | currentFeedItem = Nothing, maximizeItemView = False }
             , mapToken model markItemAsUnread <| id
             )
 
