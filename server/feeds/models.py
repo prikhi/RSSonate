@@ -97,7 +97,7 @@ class FeedItem(models.Model):
     # RSS Specs
     feed = models.ForeignKey('Feed', related_name='items')
     entry_id = models.CharField(max_length=200)
-    title = models.CharField(max_length=200)
+    title = models.CharField(max_length=300)
     link = models.URLField()
     description = models.TextField()
     published = models.DateTimeField(null=True)
