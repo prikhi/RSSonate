@@ -1,5 +1,4 @@
 """Store information for RSS Feeds."""
-import datetime
 import threading
 
 from dateutil import parser
@@ -56,9 +55,9 @@ class Feed(models.Model):
                 item.title = entry.get('title', '(untitled)')
                 item.link = entry.get('link', '')
                 item.description = entry.get('description', '')
-                published = entry.get('published_parsed')
-                if published:
-                    item.published = datetime.datetime(*published[:-2])
+                published = entry.get('published', None)
+                if published is not None:
+                    self.published = parser.parse(published)
                 item.save()
                 new_items.append(item)
         return new_items
