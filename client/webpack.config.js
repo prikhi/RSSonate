@@ -1,4 +1,7 @@
 var path = require("path");
+var webpack = require("webpack");
+
+var isProduction = (process.env.NODE_ENV === 'production');
 
 module.exports = {
   entry: {
@@ -22,7 +25,8 @@ module.exports = {
       {
         test: /\.elm$/,
         exclude: [/elm-stuff/, /node_modules/,],
-        loader: 'elm-hot!elm-webpack?warn=true&verbose=true&debug=true',
+        loader: isProduction ? 'elm-webpack?warn=true&verbose=true' :
+          'elm-hot!elm-webpack?warn=true&verbose=true&debug=true',
       },
       {
         test: /\.sass$/,
@@ -45,6 +49,12 @@ module.exports = {
 
     noParse: /\.elm$/,
   },
+
+  plugins: isProduction ? [
+    new webpack.optimize.UglifyJsPlugin({
+      compress: { warnings: false },
+    }),
+  ] : [],
 
   devServer: {
     inline: true,
