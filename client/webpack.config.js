@@ -1,7 +1,10 @@
 var path = require("path");
 var webpack = require("webpack");
+var CopyWebpackPlugin = require("copy-webpack-plugin");
 
 var isProduction = (process.env.NODE_ENV === 'production');
+
+var copyPlugin = new CopyWebpackPlugin([{ from: 'src/favicons' }]);
 
 module.exports = {
   entry: {
@@ -50,11 +53,13 @@ module.exports = {
     noParse: /\.elm$/,
   },
 
-  plugins: isProduction ? [
-    new webpack.optimize.UglifyJsPlugin({
-      compress: { warnings: false },
-    }),
-  ] : [],
+  plugins: [ copyPlugin ].concat(
+    isProduction ? [
+      new webpack.optimize.UglifyJsPlugin({
+        compress: { warnings: false },
+      }),
+    ] : []
+  ),
 
   devServer: {
     inline: true,

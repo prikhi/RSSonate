@@ -25,6 +25,7 @@
   "homepage": "https://github.com/prikhi/rssonate#readme",
   "dependencies": {
     "bootstrap": "^4.0.0-alpha.5",
+    "copy-webpack-plugin": "^4.0.1",
     "css-loader": "^0.26.0",
     "elm": "^0.18.0",
     "elm-hot-loader": "^0.5.2",
