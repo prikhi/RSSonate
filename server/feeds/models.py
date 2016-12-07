@@ -1,15 +1,16 @@
 """Store information for RSS Feeds."""
+import datetime
 from HTMLParser import HTMLParser
 import threading
 
 import bleach
-from dateutil import parser
 from django.conf import settings
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.forms import ValidationError
 import feedparser
+import pytz
 
 
 class Feed(models.Model):
@@ -34,13 +35,14 @@ class Feed(models.Model):
         html = HTMLParser()
         self.title = html.unescape(feed.get('title', ''))
         self.description = bleach.clean(feed.get('description', ''))
-        self.channel_link = strip_html(feed.get('link', ''))
-        published = strip_html(feed.get('published', feed.get('updated')))
+        self.channel_link = feed.get('link', '')
+        published = feed.get('published_parsed', feed.get('updated_parsed'))
         if published is not None:
-            self.published = parser.parse(published)
+            self.published = datetime.datetime(
+                *published[:-2]).replace(tzinfo=pytz.UTC)
         self.full_clean()
-        self.async_update_items()
-        return super(Feed, self).save(*args, **kwargs)
+        super(Feed, self).save(*args, **kwargs)
+        self.update_items()
 
     def async_update_items(self):
         """Update the Feed in a separate thread."""
@@ -57,19 +59,15 @@ class Feed(models.Model):
             if not item_entered:
                 item = FeedItem(feed=self, entry_id=entry['id'])
                 item.title = html.unescape(entry.get('title', '(untitled)'))
-                item.link = strip_html(entry.get('link', ''))
+                item.link = entry.get('link', '')
                 item.description = entry.get('description', '')
-                published = strip_html(entry.get('published', None))
+                published = entry.get('published_parsed', None)
                 if published is not None:
-                    self.published = parser.parse(published)
+                    item.published = datetime.datetime(
+                        *published[:-2]).replace(tzinfo=pytz.UTC)
                 item.save()
                 new_items.append(item)
         return new_items
-
-
-def strip_html(html):
-    """Strip all HTML tags from the given string."""
-    bleach.clean(html, tags=[], strip=True)
 
 
 class FeedSubscription(models.Model):
