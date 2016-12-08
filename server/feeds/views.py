@@ -40,6 +40,9 @@ class FeedViewSet(viewsets.GenericViewSet):
         feed = self.get_object()
         new_items = feed.update_items()
         data = FeedItemSerializer(new_items, many=True).data
+        for datum in data:
+            datum['is_unread'] = True
+            datum['is_favorite'] = False
         return Response({"results": data})
 
     @detail_route(methods=['PUT'])
