@@ -52,6 +52,13 @@ class FeedViewSet(viewsets.GenericViewSet):
             user=request.user, item__feed=pk).update(is_unread=False)
         return Response("ok")
 
+    def destroy(self, request, pk=None):
+        """Remove the User's FeedSubscription."""
+        subscription = get_object_or_404(
+            FeedSubscription, feed=pk, user=request.user)
+        subscription.delete()
+        return Response("ok")
+
 
 class FeedItemViewSet(viewsets.GenericViewSet):
     """API endpoint that allows a User's FeedItem's to be edited & listed."""
