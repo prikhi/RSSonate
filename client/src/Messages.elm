@@ -18,6 +18,7 @@ type Msg
     | LogoutButtonClicked
     | SetCurrentFeed FeedId
     | SetCurrentFeedItem FeedItemId
+    | ToggleEditingFeedsClicked
     | FavoritesButtonClicked
     | RefreshFeedsClicked
     | RefreshFeedClicked FeedId
@@ -25,11 +26,13 @@ type Msg
     | ToggleItemViewMaximized
     | ToggleItemIsFavorite FeedItemId
     | MarkUnreadButtonClicked FeedItemId
+    | DeleteFeedClicked FeedId
     | DomTaskCompleted (Result Dom.Error ())
     | AuthCompleted (HttpData Auth.Token)
     | FeedAdded (HttpData Feed)
     | FeedRefreshed FeedId (HttpData (List FeedItem))
     | FeedsFetched (HttpData (List Feed))
+    | FeedDeleted (HttpData FeedId)
     | FeedMarkedRead (HttpData FeedId)
     | FeedItemsFetched FeedId (HttpData (List FeedItem))
     | FeedItemMarkedRead (HttpData FeedItemId)

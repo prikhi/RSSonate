@@ -59,6 +59,9 @@ update msg model =
                     ]
                 )
 
+        ToggleEditingFeedsClicked ->
+            ( { model | editingFeeds = not model.editingFeeds }, Cmd.none )
+
         FavoritesButtonClicked ->
             ( { model | itemsShown = Model.Favorites, currentFeedItem = Nothing }
             , Cmd.batch <|
@@ -115,6 +118,14 @@ update msg model =
             , mapToken model markItemAsUnread <| id
             )
 
+        DeleteFeedClicked id ->
+            ( { model
+                | feeds = List.filter (\f -> f.id /= id) model.feeds
+                , feedItems = List.filter (\i -> i.feed /= id) model.feedItems
+              }
+            , mapToken model deleteFeed <| id
+            )
+
         DomTaskCompleted _ ->
             ( model, Cmd.none )
 
@@ -165,6 +176,9 @@ update msg model =
             ( { model | feeds = feeds }, Cmd.none )
 
         FeedsFetched (Err _) ->
+            ( model, Cmd.none )
+
+        FeedDeleted _ ->
             ( model, Cmd.none )
 
         FeedMarkedRead _ ->

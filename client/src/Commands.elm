@@ -90,6 +90,12 @@ fetchFeeds token =
         |> sendAuthRequest token FeedsFetched (Decode.list feedDecoder)
 
 
+deleteFeed : Auth.Token -> FeedId -> Cmd Msg
+deleteFeed token id =
+    HttpBuilder.delete ("/api/feeds/" ++ toString id ++ "/")
+        |> sendAuthRequest token FeedDeleted (Decode.succeed id)
+
+
 fetchItemsForFeedOnce : Model -> FeedId -> Cmd Msg
 fetchItemsForFeedOnce model id =
     if Set.member id model.fetchedFeeds then

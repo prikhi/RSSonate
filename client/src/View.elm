@@ -88,6 +88,14 @@ page model =
                 Model.Favorites ->
                     Utils.filterEquals .isFavorite model.feedItems True
 
+        editButton =
+            button
+                [ class "btn btn-sm btn-default"
+                , onClick ToggleEditingFeedsClicked
+                , title "Edit Feeds"
+                ]
+                [ icon "edit" ]
+
         favoritesButton =
             button
                 [ class "btn btn-sm btn-warning"
@@ -110,29 +118,72 @@ page model =
             else
                 ""
     in
-        [ div [ class <| "col-sm-3" ++ collapseClass ]
-            [ div [ id "feeds-panel", class "card card-inverse" ]
-                [ div [ class "card-header card-primary clearfix" ]
-                    [ text "Feeds"
-                    , span [ class "float-xs-right" ]
-                        [ favoritesButton, text " ", refreshFeedsButton ]
+        if model.editingFeeds then
+            [ div [ class "col-sm-12" ] [ editFeedsPanel model ] ]
+        else
+            [ div [ class <| "col-sm-3" ++ collapseClass ]
+                [ div [ id "feeds-panel", class "card card-inverse" ]
+                    [ div [ class "card-header card-primary clearfix" ]
+                        [ text "Feeds"
+                        , span [ class "float-xs-right" ]
+                            [ editButton
+                            , text " "
+                            , favoritesButton
+                            , text " "
+                            , refreshFeedsButton
+                            ]
+                        ]
+                    , feedsPanel model.feeds <| Model.feedIdOfItems model.itemsShown
                     ]
-                , feedsPanel model.feeds <| Model.feedIdOfItems model.itemsShown
+                ]
+            , div [ class <| "col-sm-9" ++ collapseClass ]
+                [ div [ id "items-panel", class "card card-inverse" ] <|
+                    itemsPanel maybeFeed
+                        model.currentFeedItem
+                        feedItems
+                        model.isRefreshingFeed
+                        model.refreshingFeedsStatus
+                ]
+            , div [ class "col-sm-12" ]
+                [ div [ id "content-panel", class "card card-inverse" ] <|
+                    itemPanel maybeFeedItem feedItems
                 ]
             ]
-        , div [ class <| "col-sm-9" ++ collapseClass ]
-            [ div [ id "items-panel", class "card card-inverse" ] <|
-                itemsPanel maybeFeed
-                    model.currentFeedItem
-                    feedItems
-                    model.isRefreshingFeed
-                    model.refreshingFeedsStatus
+
+
+editFeedsPanel : Model -> Html Msg
+editFeedsPanel model =
+    let
+        itemRow feed =
+            tr []
+                [ td [] [ text <| Model.feedTitleOrUrl feed ]
+                , td [ class "text-danger text-xs-center" ]
+                    [ a [ href "#", onClick <| DeleteFeedClicked feed.id ] [ icon "remove" ]
+                    ]
+                ]
+    in
+        div [ class "card card-inverse" ]
+            [ div [ class "card-header card-primary clearfix" ]
+                [ text "Edit Feeds"
+                , span [ class "float-xs-right" ]
+                    [ button
+                        [ class "btn btn-sm btn-default"
+                        , onClick ToggleEditingFeedsClicked
+                        ]
+                        [ icon "arrow-left" ]
+                    ]
+                ]
+            , table [ class "table table-sm table-striped table-hover" ]
+                [ thead []
+                    [ tr []
+                        [ th [] [ text "Name" ]
+                        , th [ class "text-xs-center" ]
+                            [ text "Delete" ]
+                        ]
+                    ]
+                , tbody [] <| List.map itemRow model.feeds
+                ]
             ]
-        , div [ class "col-sm-12" ]
-            [ div [ id "content-panel", class "card card-inverse" ] <|
-                itemPanel maybeFeedItem feedItems
-            ]
-        ]
 
 
 feedsPanel : List Feed -> Maybe FeedId -> Html Msg
@@ -141,7 +192,7 @@ feedsPanel feeds maybeFeedId =
         feedItem feed =
             li [ class "nav-item clearfix", onClick <| SetCurrentFeed feed.id ]
                 [ a [ class <| linkClass feed, href "#" ]
-                    [ text <| title feed
+                    [ text <| Model.feedTitleOrUrl feed
                     , unreadBadge feed
                     ]
                 ]
@@ -154,12 +205,6 @@ feedsPanel feeds maybeFeedId =
 
         isActive feed =
             Just feed.id == maybeFeedId
-
-        title feed =
-            if feed.title == "" then
-                feed.feedUrl
-            else
-                feed.title
 
         unreadBadge feed =
             if feed.unreadCount > 0 then

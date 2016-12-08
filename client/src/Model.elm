@@ -20,6 +20,7 @@ type alias Model =
     , isRefreshingFeed : Bool
     , refreshingFeedsStatus : RemoteStatus.Model
     , fetchedFeeds : Set.Set FeedId
+    , editingFeeds : Bool
     }
 
 
@@ -36,6 +37,7 @@ initialModel maybeToken =
     , isRefreshingFeed = False
     , refreshingFeedsStatus = RemoteStatus.initial
     , fetchedFeeds = Set.empty
+    , editingFeeds = False
     }
 
 
@@ -67,6 +69,14 @@ type alias Feed =
     , channelLink : String
     , unreadCount : Int
     }
+
+
+feedTitleOrUrl : Feed -> String
+feedTitleOrUrl { title, feedUrl } =
+    if title == "" then
+        feedUrl
+    else
+        title
 
 
 feedDecoder : Decode.Decoder Feed
