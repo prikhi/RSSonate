@@ -1,7 +1,7 @@
 module View exposing (view)
 
 import Auth
-import Date.Format
+import Date
 import Html exposing (..)
 import Html.Attributes exposing (type_, value, placeholder, class, href, id, target, disabled, attribute, checked, title)
 import Html.Events exposing (onSubmit, onInput, onClick)
@@ -290,14 +290,22 @@ feedItemTable maybeItemId items =
                 |> String.join " "
 
         formatDate =
-            Maybe.map (Date.Format.format "%m/%d/%Y") >> Maybe.withDefault ""
+            Maybe.map
+                (\date ->
+                    (toString <| Date.day date)
+                        ++ "/"
+                        ++ (toString << Utils.monthNumber <| Date.month date)
+                        ++ "/"
+                        ++ (toString <| Date.year date)
+                )
+                >> Maybe.withDefault ""
 
         itemRow item =
             tr [ class <| rowClass item, onClick <| SetCurrentFeedItem item.id ]
                 [ td [ onClick <| ToggleItemIsFavorite item.id, class "text-xs-center" ]
                     [ starIcon item.isFavorite ]
                 , td [] [ a [ href "#" ] [ text item.title ] ]
-                , td [] [ text <| formatDate item.published ]
+                , td [ class "text-xs-right" ] [ text <| formatDate item.published ]
                 ]
     in
         if List.isEmpty items then
@@ -308,7 +316,7 @@ feedItemTable maybeItemId items =
                     [ tr []
                         [ th [ class "text-xs-center" ] [ icon "star" ]
                         , th [] [ text "Title" ]
-                        , th [] [ text "Date" ]
+                        , th [ class "text-xs-right" ] [ text "Date" ]
                         ]
                     ]
                 , tbody [] <| List.map itemRow items

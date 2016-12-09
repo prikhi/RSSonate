@@ -1,5 +1,6 @@
 # v1.1.0
 
+* Don't pad published dates with zeroes.
 * Add ability to unsubscribe to feeds.
 * Fix loading new items when refreshing feeds.
 * Add favicons.
